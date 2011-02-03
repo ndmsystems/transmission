@@ -1344,6 +1344,8 @@ onAnnounceDone( tr_session   * session,
 
         if( responseCode == HTTP_OK )
         {
+            tr_strlcpy( tier->lastAnnounceStr, _( "Success" ), sizeof( tier->lastAnnounceStr ) );
+	    
             success = parseAnnounceResponse( tier, response, responseLen, &gotScrape );
             dbgmsg( tier, "success is %d", success );
 
@@ -1672,6 +1674,9 @@ onScrapeDone( tr_session   * session,
         {
             const int interval = tier->scrapeIntervalSec;
             tier->scrapeAt = now + interval;
+
+            tr_strlcpy( tier->lastScrapeStr, _( "Success" ),
+                        sizeof( tier->lastScrapeStr ) );
 
             if( responseCode == HTTP_OK )
                 success = parseScrapeResponse( tier, response, responseLen,
