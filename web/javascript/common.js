@@ -17,7 +17,7 @@ if (iPhone) var scroll_timeout;
 
 function testSafari3()
 {
-    var minimum = new Array(521,0);
+    var minimum = new Array(412,0);
     var webKitFields = RegExp("( AppleWebKit/)([^ ]+)").exec(navigator.userAgent);
     if (!webKitFields || webKitFields.length < 3) return false;
     var version = webKitFields[2].split(".");
