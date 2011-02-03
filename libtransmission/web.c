@@ -24,6 +24,7 @@
 #include "utils.h"
 #include "version.h"
 #include "web.h"
+#include <netdb.h>
 
 enum
 {
@@ -458,6 +459,9 @@ doDNS( void * vtask )
     tr_address addr;
     int port = -1;
     char * host = NULL;
+    struct hostent     *he;
+    struct   sockaddr_in   adr;
+     
     struct tr_web_task * task = vtask;
     tr_dns_result lookup_result = TR_DNS_UNTESTED;
 
@@ -477,7 +481,11 @@ doDNS( void * vtask )
         }
         else
         {
-            lookup_result = dns_cache_lookup( task, host, &task->resolved_host );
+        	 if( (he = gethostbyname(host)) ) {
+        		 memcpy(&adr.sin_addr, he->h_addr_list[0], he->h_length);
+        		 task->resolved_host = strdup(inet_ntoa(adr.sin_addr));
+        		 lookup_result = TR_DNS_OK;
+        	 } 
         }
     }
 
