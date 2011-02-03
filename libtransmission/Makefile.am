@@ -61,7 +61,8 @@ libtransmission_a_SOURCES = \
     verify.c \
     web.c \
     webseed.c \
-    wildmat.c
+    wildmat.c \
+    sha1.c
 
 noinst_HEADERS = \
     announcer.h \
@@ -111,7 +112,8 @@ noinst_HEADERS = \
     verify.h \
     version.h \
     web.h \
-    webseed.h
+    webseed.h \
+    sha1.h
 
 TESTS = \
     blocklist-test \

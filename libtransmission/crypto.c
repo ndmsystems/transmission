@@ -25,6 +25,9 @@
 #include <openssl/sha.h>
 #include <openssl/rand.h>
 
+
+#include "sha1.h"
+
 #include <event.h>
 
 #include "crypto.h"
@@ -43,10 +46,10 @@ tr_sha1( uint8_t *    setme,
          ... )
 {
     va_list vl;
-    SHA_CTX sha;
+    blk_SHA_CTX sha;
 
-    SHA1_Init( &sha );
-    SHA1_Update( &sha, content1, content1_len );
+    blk_SHA1_Init( &sha );
+    blk_SHA1_Update( &sha, content1, content1_len );
 
     va_start( vl, content1_len );
     for( ; ; )
@@ -55,10 +58,10 @@ tr_sha1( uint8_t *    setme,
         const int    content_len = content ? (int) va_arg( vl, int ) : -1;
         if( content == NULL || content_len < 1 )
             break;
-        SHA1_Update( &sha, content, content_len );
+        blk_SHA1_Update( &sha, content, content_len );
     }
     va_end( vl );
-    SHA1_Final( setme, &sha );
+    blk_SHA1_Final( setme, &sha );
 }
 
 /**
@@ -226,24 +229,19 @@ initRC4( tr_crypto *  crypto,
          RC4_KEY *    setme,
          const char * key )
 {
-    SHA_CTX sha;
+    blk_SHA_CTX sha;
     uint8_t buf[SHA_DIGEST_LENGTH];
 
     assert( crypto->torrentHashIsSet );
     assert( crypto->mySecretIsSet );
 
-    if( SHA1_Init( &sha )
-        && SHA1_Update( &sha, key, 4 )
-        && SHA1_Update( &sha, crypto->mySecret, KEY_LEN )
-        && SHA1_Update( &sha, crypto->torrentHash, SHA_DIGEST_LENGTH )
-        && SHA1_Final( buf, &sha ) )
-    {
+    blk_SHA1_Init( &sha );
+    blk_SHA1_Update( &sha, key, 4 );
+    blk_SHA1_Update( &sha, crypto->mySecret, KEY_LEN );
+    blk_SHA1_Update( &sha, crypto->torrentHash, SHA_DIGEST_LENGTH );
+    blk_SHA1_Final( buf, &sha );
+    
         RC4_set_key( setme, SHA_DIGEST_LENGTH, buf );
-    }
-    else
-    {
-        logErrorFromSSL( );
-    }
 }
 
 void

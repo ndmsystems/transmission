@@ -23,7 +23,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include <openssl/sha.h>
+#include "sha1.h"
 
 #include "transmission.h"
 #include "crypto.h"
@@ -298,7 +298,7 @@ recalculateHash( tr_torrent       * tor,
     uint32_t offset = 0;
     tr_bool  success = TRUE;
     uint8_t  stackbuf[MAX_STACK_ARRAY_SIZE];
-    SHA_CTX  sha;
+    blk_SHA_CTX  sha;
 
     /* fallback buffer */
     if( ( buffer == NULL ) || ( buflen < 1 ) )
@@ -313,7 +313,7 @@ recalculateHash( tr_torrent       * tor,
     assert( buflen > 0 );
     assert( setme != NULL );
 
-    SHA1_Init( &sha );
+    blk_SHA1_Init( &sha );
     bytesLeft = tr_torPieceCountBytes( tor, pieceIndex );
 
     while( bytesLeft )
@@ -322,13 +322,13 @@ recalculateHash( tr_torrent       * tor,
         success = !tr_ioRead( tor, pieceIndex, offset, len, buffer );
         if( !success )
             break;
-        SHA1_Update( &sha, buffer, len );
+        blk_SHA1_Update( &sha, buffer, len );
         offset += len;
         bytesLeft -= len;
     }
 
     if( success )
-        SHA1_Final( setme, &sha );
+        blk_SHA1_Final( setme, &sha );
 
     return success;
 }

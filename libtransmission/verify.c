@@ -25,7 +25,7 @@
  #define HAVE_VALLOC
 #endif
 
-#include <openssl/sha.h>
+#include "sha1.h"
 
 #include "transmission.h"
 #include "completion.h"
@@ -44,7 +44,7 @@
 
 enum
 {
-    MSEC_TO_SLEEP_PER_SECOND_DURING_VERIFY = 200
+    MSEC_TO_SLEEP_PER_SECOND_DURING_VERIFY = 100
 };
 
 /* #define STOPWATCH */
@@ -52,7 +52,7 @@ enum
 static tr_bool
 verifyTorrent( tr_torrent * tor, tr_bool * stopFlag )
 {
-    SHA_CTX sha;
+    blk_SHA_CTX sha;
     int fd = -1;
     int64_t filePos = 0;
     tr_bool changed = 0;
@@ -68,6 +68,7 @@ verifyTorrent( tr_torrent * tor, tr_bool * stopFlag )
     int64_t buflen;
     uint8_t * buffer = NULL;
     const int64_t maxbuf = 16384;
+    ssize_t readed;
 
 #ifdef HAVE_GETPAGESIZE
     buflen = getpagesize();
@@ -88,7 +89,7 @@ verifyTorrent( tr_torrent * tor, tr_bool * stopFlag )
     if( !buffer )
         buffer = malloc( buflen );
 
-    SHA1_Init( &sha );
+    blk_SHA1_Init( &sha );
 
     while( !*stopFlag && ( pieceIndex < tor->info.pieceCount ) )
     {
@@ -123,15 +124,14 @@ verifyTorrent( tr_torrent * tor, tr_bool * stopFlag )
 
         /* read a bit */
         if( fd >= 0 ) {
-            const ssize_t numRead = tr_pread( fd, buffer, bytesThisPass, filePos );
-            if( numRead == bytesThisPass )
-                SHA1_Update( &sha, buffer, numRead );
-            if( numRead > 0 ) {
-                pieceBytesRead += numRead;
+    	     readed = tr_pread( fd, buffer, bytesThisPass, filePos );
+            if( readed > 0 ) {
+        	pieceBytesRead += readed;
+        	blk_SHA1_Update( &sha, buffer, readed );
 #if defined HAVE_POSIX_FADVISE && defined POSIX_FADV_DONTNEED
-                posix_fadvise( fd, filePos, bytesThisPass, POSIX_FADV_DONTNEED );
+        	posix_fadvise( fd, filePos, bytesThisPass, POSIX_FADV_DONTNEED );
 #endif
-            }
+	    }
         }
 
         /* move our offsets */
@@ -147,7 +147,7 @@ verifyTorrent( tr_torrent * tor, tr_bool * stopFlag )
             tr_bool hasPiece;
             uint8_t hash[SHA_DIGEST_LENGTH];
 
-            SHA1_Final( hash, &sha );
+            blk_SHA1_Final( hash, &sha );
             hasPiece = !memcmp( hash, tor->info.pieces[pieceIndex].hash, SHA_DIGEST_LENGTH );
             /* fprintf( stderr, "do the hashes match? %s\n", (hasPiece?"yes":"no") ); */
 
@@ -170,7 +170,7 @@ verifyTorrent( tr_torrent * tor, tr_bool * stopFlag )
                 tr_wait_msec( MSEC_TO_SLEEP_PER_SECOND_DURING_VERIFY );
             }
 
-            SHA1_Init( &sha );
+            blk_SHA1_Init( &sha );
             ++pieceIndex;
             piecePos = 0;
             pieceBytesRead = 0;
