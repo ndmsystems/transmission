@@ -186,6 +186,11 @@ preallocateFileFull( const char * filename, uint64_t length )
         }
 # endif
 
+        if( !success ) /* fake allocate */
+        {
+            success = !ftruncate(fd, length);
+        }
+
         if( !success ) /* if nothing else works, do it the old-fashioned way */
         {
             uint8_t buf[ 4096 ];
