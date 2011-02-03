@@ -223,8 +223,10 @@ readOrWritePiece( tr_torrent       * tor,
 
     if( pieceIndex >= tor->info.pieceCount )
         return EINVAL;
+    /*
     if( pieceOffset + buflen > tr_torPieceCountBytes( tor, pieceIndex ) )
         return EINVAL;
+    */
 
     tr_ioFindFileLocation( tor, pieceIndex, pieceOffset,
                            &fileIndex, &fileOffset );
