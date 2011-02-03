@@ -1639,11 +1639,7 @@ tr_bencToFile( const tr_benc * top, tr_fmt_mode mode, const char * filename )
             {
                 tr_dbg( "Renaming \"%s\" as \"%s\"", tmp, filename );
 
-                if( !rename( tmp, filename ) )
-                {
-                    tr_inf( _( "Saved \"%s\"" ), filename );
-                }
-                else
+                if( rename( tmp, filename ) )
                 {
                     err = errno;
                     tr_err( _( "Couldn't save file \"%1$s\": %2$s" ), filename, tr_strerror( err ) );

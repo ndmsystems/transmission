@@ -35,7 +35,7 @@
 
 #include "watch.h"
 
-#define MY_NAME "transmission-daemon"
+#define MY_NAME "transmission"
 
 #define PREF_KEY_DIR_WATCH          "watch-dir"
 #define PREF_KEY_DIR_WATCH_ENABLED  "watch-dir-enabled"
@@ -238,9 +238,9 @@ printMessage( FILE * logfile, int level, const char * name, const char * message
         char timestr[64];
         tr_getLogTimeStr( timestr, sizeof( timestr ) );
         if( name )
-            fprintf( logfile, "[%s] %s %s (%s:%d)\n", timestr, name, message, file, line );
+            fprintf( logfile, "[%s] %s %s\n", timestr, name, message);
         else
-            fprintf( logfile, "[%s] %s (%s:%d)\n", timestr, message, file, line );
+            fprintf( logfile, "[%s] %s\n", timestr, message);
     }
 #ifdef HAVE_SYSLOG
     else /* daemon... write to syslog */
@@ -255,9 +255,9 @@ printMessage( FILE * logfile, int level, const char * name, const char * message
         }
 
         if( name )
-            syslog( priority, "%s %s (%s:%d)", name, message, file, line );
+            syslog( priority, "%s %s", name, message);
         else
-            syslog( priority, "%s (%s:%d)", message, file, line );
+            syslog( priority, "%s", message);
     }
 #endif
 }
