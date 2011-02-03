@@ -142,6 +142,10 @@ const char* tr_getDefaultConfigDir( const char * appname );
  */
 const char* tr_getDefaultDownloadDir( void );
 
+/* ndm specific limits */
+#define TR_MAX_SPEED_KB			1024
+#define TR_MAX_PEERS_COUNT		300
+/* ndm specific limits end */
 
 #define TR_DEFAULT_BIND_ADDRESS_IPV4       "0.0.0.0"
 #define TR_DEFAULT_BIND_ADDRESS_IPV6            "::"

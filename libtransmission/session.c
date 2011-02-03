@@ -241,10 +241,10 @@ tr_sessionGetDefaultSettings( const char * configDir, tr_benc * d )
 
     tr_bencDictReserve( d, 35 );
     tr_bencDictAddBool( d, TR_PREFS_KEY_BLOCKLIST_ENABLED,        FALSE );
-    tr_bencDictAddBool( d, TR_PREFS_KEY_DHT_ENABLED,              TRUE );
+    tr_bencDictAddBool( d, TR_PREFS_KEY_DHT_ENABLED,              FALSE );
     tr_bencDictAddStr ( d, TR_PREFS_KEY_DOWNLOAD_DIR,             tr_getDefaultDownloadDir( ) );
-    tr_bencDictAddInt ( d, TR_PREFS_KEY_DSPEED,                   100 );
-    tr_bencDictAddBool( d, TR_PREFS_KEY_DSPEED_ENABLED,           FALSE );
+    tr_bencDictAddInt ( d, TR_PREFS_KEY_DSPEED,                   TR_MAX_SPEED_KB );
+    tr_bencDictAddBool( d, TR_PREFS_KEY_DSPEED_ENABLED,           TRUE );
     tr_bencDictAddInt ( d, TR_PREFS_KEY_ENCRYPTION,               TR_DEFAULT_ENCRYPTION );
     tr_bencDictAddStr ( d, TR_PREFS_KEY_INCOMPLETE_DIR,           incompleteDir );
     tr_bencDictAddBool( d, TR_PREFS_KEY_INCOMPLETE_DIR_ENABLED,   FALSE );
@@ -258,8 +258,8 @@ tr_sessionGetDefaultSettings( const char * configDir, tr_benc * d )
     tr_bencDictAddInt ( d, TR_PREFS_KEY_PEER_PORT_RANDOM_LOW,     49152 );
     tr_bencDictAddInt ( d, TR_PREFS_KEY_PEER_PORT_RANDOM_HIGH,    65535 );
     tr_bencDictAddInt ( d, TR_PREFS_KEY_PEER_SOCKET_TOS,          atoi( TR_DEFAULT_PEER_SOCKET_TOS_STR ) );
-    tr_bencDictAddBool( d, TR_PREFS_KEY_PEX_ENABLED,              TRUE );
-    tr_bencDictAddBool( d, TR_PREFS_KEY_PORT_FORWARDING,          TRUE );
+    tr_bencDictAddBool( d, TR_PREFS_KEY_PEX_ENABLED,              FALSE );
+    tr_bencDictAddBool( d, TR_PREFS_KEY_PORT_FORWARDING,          FALSE );
 #ifdef HAVE_FALLOCATE64
     tr_bencDictAddInt ( d, TR_PREFS_KEY_PREALLOCATION,            TR_PREALLOCATE_FULL );
 #else
@@ -290,8 +290,8 @@ tr_sessionGetDefaultSettings( const char * configDir, tr_benc * d )
     tr_bencDictAddBool( d, TR_PREFS_KEY_ALT_SPEED_TIME_ENABLED,   FALSE );
     tr_bencDictAddInt ( d, TR_PREFS_KEY_ALT_SPEED_TIME_END,       1020 ); /* 5pm */
     tr_bencDictAddInt ( d, TR_PREFS_KEY_ALT_SPEED_TIME_DAY,       TR_SCHED_ALL );
-    tr_bencDictAddInt ( d, TR_PREFS_KEY_USPEED,                   100 );
-    tr_bencDictAddBool( d, TR_PREFS_KEY_USPEED_ENABLED,           FALSE );
+    tr_bencDictAddInt ( d, TR_PREFS_KEY_USPEED,                   TR_MAX_SPEED_KB );
+    tr_bencDictAddBool( d, TR_PREFS_KEY_USPEED_ENABLED,           TRUE );
     tr_bencDictAddInt ( d, TR_PREFS_KEY_UMASK,                    022 );
     tr_bencDictAddInt ( d, TR_PREFS_KEY_UPLOAD_SLOTS_PER_TORRENT, 14 );
     tr_bencDictAddStr ( d, TR_PREFS_KEY_BIND_ADDRESS_IPV4,        TR_DEFAULT_BIND_ADDRESS_IPV4 );
@@ -1201,6 +1201,7 @@ tr_sessionSetSpeedLimit( tr_session * s, tr_direction d, int KB_s )
     assert( tr_isDirection( d ) );
     assert( KB_s >= 0 );
 
+	 if( KB_s > TR_MAX_SPEED_KB ) KB_s = TR_MAX_SPEED_KB;
     s->speedLimit[d] = KB_s;
 
     updateBandwidth( s, d );
@@ -1222,7 +1223,7 @@ tr_sessionLimitSpeed( tr_session * s, tr_direction d, tr_bool b )
     assert( tr_isDirection( d ) );
     assert( tr_isBool( b ) );
 
-    s->speedLimitEnabled[d] = b;
+    s->speedLimitEnabled[d] = TRUE;
 
     updateBandwidth( s, d );
 }
@@ -1247,6 +1248,7 @@ tr_sessionSetAltSpeed( tr_session * s, tr_direction d, int KB_s )
     assert( tr_isDirection( d ) );
     assert( KB_s >= 0 );
 
+	 if( KB_s > TR_MAX_SPEED_KB ) KB_s = TR_MAX_SPEED_KB;
     s->turtle.speedLimit[d] = KB_s;
 
     updateBandwidth( s, d );
@@ -1393,6 +1395,8 @@ void
 tr_sessionSetPeerLimit( tr_session * session, uint16_t maxGlobalPeers )
 {
     assert( tr_isSession( session ) );
+
+    if( maxGlobalPeers > TR_MAX_PEERS_COUNT ) maxGlobalPeers = TR_MAX_PEERS_COUNT;
 
     tr_fdSetPeerLimit( session, maxGlobalPeers );
 }

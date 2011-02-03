@@ -1175,10 +1175,10 @@ sessionSet( tr_session               * session,
         tr_sessionUseAltSpeedTime( session, boolVal );
     if( tr_bencDictFindBool( args_in, TR_PREFS_KEY_BLOCKLIST_ENABLED, &boolVal ) )
         tr_blocklistSetEnabled( session, boolVal );
-    if( tr_bencDictFindStr( args_in, TR_PREFS_KEY_DOWNLOAD_DIR, &str ) )
+/*    if( tr_bencDictFindStr( args_in, TR_PREFS_KEY_DOWNLOAD_DIR, &str ) )
         tr_sessionSetDownloadDir( session, str );
     if( tr_bencDictFindStr( args_in, TR_PREFS_KEY_INCOMPLETE_DIR, &str ) )
-        tr_sessionSetIncompleteDir( session, str );
+        tr_sessionSetIncompleteDir( session, str ); */
     if( tr_bencDictFindBool( args_in, TR_PREFS_KEY_INCOMPLETE_DIR_ENABLED, &boolVal ) )
         tr_sessionSetIncompleteDirEnabled( session, boolVal );
     if( tr_bencDictFindInt( args_in, TR_PREFS_KEY_PEER_LIMIT_GLOBAL, &i ) )
@@ -1189,12 +1189,12 @@ sessionSet( tr_session               * session,
         tr_sessionSetPexEnabled( session, boolVal );
     if( tr_bencDictFindBool( args_in, TR_PREFS_KEY_DHT_ENABLED, &boolVal ) )
         tr_sessionSetDHTEnabled( session, boolVal );
-    if( tr_bencDictFindBool( args_in, TR_PREFS_KEY_PEER_PORT_RANDOM_ON_START, &boolVal ) )
+/*    if( tr_bencDictFindBool( args_in, TR_PREFS_KEY_PEER_PORT_RANDOM_ON_START, &boolVal ) )
         tr_sessionSetPeerPortRandomOnStart( session, boolVal );
     if( tr_bencDictFindInt( args_in, TR_PREFS_KEY_PEER_PORT, &i ) )
         tr_sessionSetPeerPort( session, i );
     if( tr_bencDictFindBool( args_in, TR_PREFS_KEY_PORT_FORWARDING, &boolVal ) )
-        tr_sessionSetPortForwardingEnabled( session, boolVal );
+        tr_sessionSetPortForwardingEnabled( session, boolVal ); */
     if( tr_bencDictFindBool( args_in, TR_PREFS_KEY_RENAME_PARTIAL_FILES, &boolVal ) )
         tr_sessionSetIncompleteFileNamingEnabled( session, boolVal );
     if( tr_bencDictFindReal( args_in, "seedRatioLimit", &d ) )
