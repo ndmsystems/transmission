@@ -392,8 +392,8 @@ main( int argc, char ** argv )
         }
     }
 
-    if( foreground && !logfile )
-        logfile = stderr;
+    /* if( foreground && !logfile )
+        logfile = stderr; */
 
     if( !loaded )
     {
@@ -452,7 +452,7 @@ main( int argc, char ** argv )
     }
 
 #ifdef HAVE_SYSLOG
-    if( !foreground )
+    /* if( !foreground ) */
         openlog( MY_NAME, LOG_CONS, LOG_DAEMON );
 #endif
 
@@ -466,7 +466,7 @@ main( int argc, char ** argv )
 
     /* shutdown */
 #if HAVE_SYSLOG
-    if( !foreground )
+    /* if( !foreground ) */
         syslog( LOG_INFO, "%s", "Closing session" );
 #endif
     printf( "Closing transmission session..." );
