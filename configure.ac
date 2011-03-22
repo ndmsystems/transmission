@@ -120,6 +120,7 @@ fi
 AC_SEARCH_LIBS(cos, [m])
 AC_SEARCH_LIBS([socket], [socket net])
 AC_SEARCH_LIBS([gethostbyname], [nsl bind])
+AC_SEARCH_LIBS([ndmx_send], ndmx, AC_DEFINE([HAVE_NDMX], 1))
 PKG_CHECK_MODULES(OPENSSL, [openssl >= $OPENSSL_MINIMUM], , [CHECK_SSL()])
 PKG_CHECK_MODULES(LIBCURL, [libcurl >= $CURL_MINIMUM])
 AC_PATH_ZLIB
@@ -380,19 +381,21 @@ dnl a "make check" failure on some systems.  if upgrading to 0.40 is
 dnl a problem and the old version was working fine for you,
 dnl it should be safe to re-edit 0.40 back down to 0.23
 
-use_nls=no
-if test "x$enable_nls" = "xyes" ; then
-    use_nls=yes
-    IT_PROG_INTLTOOL([0.40.0],[no-xml])
-    AC_CHECK_HEADERS([libintl.h])
-    GETTEXT_PACKAGE=transmission
-    AC_SUBST(GETTEXT_PACKAGE)
-    AC_DEFINE_UNQUOTED([GETTEXT_PACKAGE],["$GETTEXT_PACKAGE"],[Gettext package])
-    AM_GLIB_GNU_GETTEXT
-    transmissionlocaledir='${prefix}/${DATADIRNAME}/locale'
-    AC_SUBST(transmissionlocaledir)
-fi
+dnl use_nls=no
+dnl if test "x$enable_nls" = "xyes" ; then
+dnl     use_nls=yes
+dnl     IT_PROG_INTLTOOL([0.40.0],[no-xml])
+dnl     AC_CHECK_HEADERS([libintl.h])
+dnl     GETTEXT_PACKAGE=transmission
+dnl     AC_SUBST(GETTEXT_PACKAGE)
+dnl     AC_DEFINE_UNQUOTED([GETTEXT_PACKAGE],["$GETTEXT_PACKAGE"],[Gettext package])
+dnl     AM_GLIB_GNU_GETTEXT
+dnl     transmissionlocaledir='${prefix}/${DATADIRNAME}/locale'
+dnl     AC_SUBST(transmissionlocaledir)
+dnl fi
 
+INTLLIBS=
+AC_SUBST(INTLLIBS)
 
 dnl ----------------------------------------------------------------------------
 dnl

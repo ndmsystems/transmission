@@ -2125,7 +2125,11 @@ tr_sessionSetRPCPassword( tr_session * session,
 {
     assert( tr_isSession( session ) );
 
+#ifndef HAVE_NDMX // {
+
     tr_rpcSetPassword( session->rpcServer, password );
+
+#endif // } HAVE_NDMX
 }
 
 const char*
@@ -2133,7 +2137,15 @@ tr_sessionGetRPCPassword( const tr_session * session )
 {
     assert( tr_isSession( session ) );
 
+#ifndef HAVE_NDMX // {
+
     return tr_rpcGetPassword( session->rpcServer );
+
+#else
+
+	return "";
+
+#endif // } HAVE_NDMX
 }
 
 void
@@ -2142,7 +2154,11 @@ tr_sessionSetRPCUsername( tr_session * session,
 {
     assert( tr_isSession( session ) );
 
+#ifndef HAVE_NDMX // {
+
     tr_rpcSetUsername( session->rpcServer, username );
+
+#endif // } HAVE_NDMX
 }
 
 const char*
@@ -2150,7 +2166,15 @@ tr_sessionGetRPCUsername( const tr_session * session )
 {
     assert( tr_isSession( session ) );
 
+#ifndef HAVE_NDMX // {
+
     return tr_rpcGetUsername( session->rpcServer );
+
+#else
+
+	return "";
+
+#endif // } HAVE_NDMX
 }
 
 void

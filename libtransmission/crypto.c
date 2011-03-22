@@ -366,6 +366,8 @@ tr_cryptoRandBuf( void * buf, size_t len )
 ****
 ***/
 
+#ifndef HAVE_NDMX // {
+
 char*
 tr_ssha1( const void * plaintext )
 {
@@ -423,3 +425,6 @@ tr_ssha1_matches( const char * source, const char * pass )
 
     return result;
 }
+
+#endif // } HAVE_NDMX
+

@@ -10,6 +10,10 @@
  * $Id: rpc-server.c 9944 2010-01-16 22:46:38Z charles $
  */
 
+#ifndef __TARGET_REALM__
+#define __TARGET_REALM__ "ndm"
+#endif
+
 #include <assert.h>
 #include <errno.h>
 #include <string.h> /* memcpy */
@@ -22,6 +26,10 @@
 
 #ifdef HAVE_ZLIB
  #include <zlib.h>
+#endif
+
+#ifdef HAVE_NDMX
+ #include <libndmx.h>
 #endif
 
 #include <event.h>
@@ -561,6 +569,75 @@ test_session_id( struct tr_rpc_server * server, struct evhttp_request * req )
     return success;
 }
 
+#ifdef HAVE_NDMX // {
+
+static tr_bool
+ndm_login(
+		struct tr_rpc_server* server,
+		const char* login,
+		const char* password)
+{
+	tr_bool success = FALSE;
+
+	if( login[0] != '\0' && password[0] != '\0' &&
+		server->username != NULL && strcmp(server->username, login) == 0 &&
+		server->password != NULL && strcmp(server->password, password) == 0 )
+	{
+		success = TRUE;
+
+	} else
+	{
+		int fd = ndmx_connect();
+
+		struct ndmx_send_t request[] =
+		{
+			{ NDMX_NODE, "request", NULL },
+			{ NDMX_NODE, "hello", password },
+			{ NDMX_ATTR, "name", login },
+			{ NDMX_ATTR, "realm", __TARGET_REALM__ },
+			{ NDMX_ATTR, "tag", "torrent" },
+			{ NDMX_EEND }
+		};
+
+		struct ndmx_recv_t* response = NULL;
+
+		struct ndmx_ptrn_t prompt_ptrn[] =
+		{
+			{ ndmx_node_match, "prompt", NULL },
+			{ ndmx_stop }
+		};
+
+		if( fd > 0 )
+		{
+			if( ndmx_send(fd, request) == NDMX_RET_OK &&
+				ndmx_recv(fd, &response) == NDMX_RET_OK )
+			{
+				if( ndmx_match(response, prompt_ptrn) == NDMX_RET_OK )
+				{
+					tr_rpcSetUsername(server, login);
+					tr_rpcSetPassword(server, password);
+					success = TRUE;
+
+				} else
+				{
+					tr_free(server->username);
+					server->username = NULL;
+					tr_free(server->password);
+					server->password = NULL;
+				}
+
+				ndmx_free(response);
+			}
+
+			ndmx_close(fd);
+		}
+	}
+
+	return success;
+}
+
+#endif // } HAVE_NDMX
+
 static void
 handle_request( struct evhttp_request * req, void * arg )
 {
@@ -595,9 +672,16 @@ handle_request( struct evhttp_request * req, void * arg )
                 "<p>If you're still using ACLs, use a whitelist instead.  See the transmission-daemon manpage for details.</p>" );
         }
         else if( server->isPasswordEnabled
+#ifdef HAVE_NDMX // {
+
+				&& ( !pass || !user || !ndm_login(server, user, pass) ) )
+
+#else // } HAVE_NDMX {
+
                  && ( !pass || !user || strcmp( server->username, user )
                                      || !tr_ssha1_matches( server->password,
                                                            pass ) ) )
+#endif // !HAVE_NDMX
         {
             evhttp_add_header( req->output_headers,
                                "WWW-Authenticate",
@@ -820,9 +904,15 @@ tr_rpcSetPassword( tr_rpc_server * server,
                    const char *    password )
 {
     tr_free( server->password );
+
+#ifndef HAVE_NDMX // {
+
     if( *password != '{' )
         server->password = tr_ssha1( password );
     else
+
+#endif // } !HAVE_LIBNDMX
+
         server->password = strdup( password );
     dbgmsg( "setting our Password to [%s]", server->password );
 }
@@ -920,6 +1010,8 @@ tr_rpcInit( tr_session  * session, tr_benc * settings )
     assert( found );
     tr_rpcSetWhitelist( s, str ? str : "127.0.0.1" );
 
+#ifndef HAVE_NDMX // {
+
     found = tr_bencDictFindStr( settings, TR_PREFS_KEY_RPC_USERNAME, &str );
     assert( found );
     tr_rpcSetUsername( s, str );
@@ -927,6 +1019,8 @@ tr_rpcInit( tr_session  * session, tr_benc * settings )
     found = tr_bencDictFindStr( settings, TR_PREFS_KEY_RPC_PASSWORD, &str );
     assert( found );
     tr_rpcSetPassword( s, str );
+
+#endif // } !HAVE_NDMX
 
     found = tr_bencDictFindStr( settings, TR_PREFS_KEY_RPC_BIND_ADDRESS, &str );
     assert( found );

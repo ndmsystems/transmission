@@ -97,11 +97,15 @@ int            tr_cryptoWeakRandInt( int n );
 /** @brief fill a buffer with random bytes */
 void  tr_cryptoRandBuf( void * buf, size_t len );
 
+#ifndef HAVE_NDMX // {
+
 /** @brief generate a SSHA password from its plaintext source */
 char*  tr_ssha1( const void * plaintext );
 
 /** @brief Validate a test password against the a ssha1 password */
 tr_bool tr_ssha1_matches( const char * ssha1, const char * pass );
+
+#endif // } HAVE_NDMX
 
 /* @} */
 
