@@ -9,6 +9,14 @@
 #include "portlistingparse.h"
 #include "minixml.h"
 
+#ifndef UNUSED
+ #ifdef __GNUC__
+  #define UNUSED __attribute__ ((unused))
+ #else
+  #define UNUSED
+ #endif
+#endif
+
 /* list of the elements */
 static const struct {
 	const portMappingElt code;
@@ -68,7 +76,7 @@ startelt(void * d, const char * name, int l)
 
 /* End element handler */
 static void
-endelt(void * d, const char * name, int l)
+endelt(void * d, const char * name UNUSED, int l UNUSED)
 {
 	struct PortMappingParserData * pdata = (struct PortMappingParserData *)d;
 	pdata->curelt = PortMappingEltNone;
