@@ -230,7 +230,7 @@ Torrent.prototype =
 	getLastActivity: function() { return this.fields.activityDate; },
 	getLeftUntilDone: function() { return this.fields.leftUntilDone; },
 	getMetadataPercentComplete: function() { return this.fields.metadataPercentComplete; },
-	getName: function() { return this.fields.name || 'Unknown'; },
+	getName: function() { return this.fields.name || '-'; },
 	getPeers: function() { return this.fields.peers; },
 	getPeersConnected: function() { return this.fields.peersConnected; },
 	getPeersGettingFromUs: function() { return this.fields.peersGettingFromUs; },
@@ -266,16 +266,16 @@ Torrent.prototype =
 	getPercentDone: function() { return this.fields.percentDone; },
 	getStateString: function() {
 		switch(this.getStatus()) {
-			case Torrent._StatusStopped:        return this.isFinished() ? 'Seeding complete' : 'Paused';
-			case Torrent._StatusCheckWait:      return 'Queued for verification';
-			case Torrent._StatusCheck:          return 'Verifying local data';
-			case Torrent._StatusDownloadWait:   return 'Queued for download';
-			case Torrent._StatusDownload:       return 'Downloading';
-			case Torrent._StatusSeedWait:       return 'Queued for seeding';
-			case Torrent._StatusSeed:           return 'Seeding';
+			case Torrent._StatusStopped:        return 'Загрузка ' + (this.isFinished() ? 'завершена' : 'приостановлена');
+			case Torrent._StatusCheckWait:      return 'В очереди на проверку';
+			case Torrent._StatusCheck:          return 'Проверка локальных данных';
+			case Torrent._StatusDownloadWait:   return 'В очереди для загрузки';
+			case Torrent._StatusDownload:       return 'Загрузка';
+			case Torrent._StatusSeedWait:       return 'В очереди для раздачи';
+			case Torrent._StatusSeed:           return 'Раздача';
 			case null:
-			case undefined:                     return 'Unknown';
-			default:                            return 'Error';
+			case undefined:                     return '-';
+			default:                            return 'Ошибка';
 		}
 	},
 	seedRatioLimit: function(controller){
@@ -289,11 +289,11 @@ Torrent.prototype =
 		var str = this.getErrorString();
 		switch(this.getError()) {
 			case Torrent._ErrTrackerWarning:
-				return 'Tracker returned a warning: ' + str;
+				return 'Трекер вернул предупреждение: ' + str;
 			case Torrent._ErrTrackerError:
-				return 'Tracker returned an error: ' + str;
+				return 'Трекер вернул ошибку: ' + str;
 			case Torrent._ErrLocalError:
-				return 'Error: ' + str;
+				return 'Ошибка: ' + str;
 			default:
 				return null;
 		}
