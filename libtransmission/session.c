@@ -342,7 +342,7 @@ tr_sessionGetDefaultSettings (tr_variant * d)
   tr_variantDictAddStr  (d, TR_KEY_peer_socket_tos,                 TR_DEFAULT_PEER_SOCKET_TOS_STR);
   tr_variantDictAddBool (d, TR_KEY_pex_enabled,                     false);
   tr_variantDictAddBool (d, TR_KEY_port_forwarding_enabled,         false);
-  tr_variantDictAddInt  (d, TR_KEY_preallocation,                   TR_PREALLOCATE_SPARSE);
+  tr_variantDictAddInt  (d, TR_KEY_preallocation,                   TR_PREALLOCATE_FULL);
   tr_variantDictAddBool (d, TR_KEY_prefetch_enabled,                DEFAULT_PREFETCH_ENABLED);
   tr_variantDictAddInt  (d, TR_KEY_peer_id_ttl_hours,               6);
   tr_variantDictAddBool (d, TR_KEY_queue_stalled_enabled,           true);
@@ -830,7 +830,7 @@ sessionSetImpl (void * vdata)
   if (tr_variantDictFindBool (settings, TR_KEY_prefetch_enabled, &boolVal))
     session->isPrefetchEnabled = boolVal;
   if (tr_variantDictFindInt (settings, TR_KEY_preallocation, &i))
-    session->preallocationMode = i;
+    session->preallocationMode = TR_PREALLOCATE_FULL;
   if (tr_variantDictFindStr (settings, TR_KEY_download_dir, &str, NULL))
     tr_sessionSetDownloadDir (session, str);
   if (tr_variantDictFindStr (settings, TR_KEY_incomplete_dir, &str, NULL))
