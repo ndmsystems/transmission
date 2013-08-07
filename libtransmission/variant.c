@@ -1212,12 +1212,12 @@ tr_variantToFile (const tr_variant  * v,
         {
           tr_close_file (fd);
 
-          if (!tr_rename (tmp, filename))
+          if (tr_rename (tmp, filename))
             {
-              tr_logAddInfo (_("Saved \"%s\""), filename);
+/*              tr_logAddInfo (_("Saved \"%s\""), filename);
             }
           else
-            {
+            { */
               err = errno;
               tr_logAddError (_("Couldn't save file \"%1$s\": %2$s"), filename, tr_strerror (err));
               tr_remove (tmp);
