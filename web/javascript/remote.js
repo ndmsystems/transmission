@@ -57,14 +57,14 @@ TransmissionRemote.prototype =
 					? request.responseText.trim().replace(/(<([^>]+)>)/ig,"")
 					: "";
 		if (!remote._error.length)
-			remote._error = 'Server not responding';
+			remote._error = 'Сервер не отвечает';
 
-		dialog.confirm('Connection Failed',
-			'Could not connect to the server. You may need to reload the page to reconnect.',
-			'Details',
+		dialog.confirm('Ошибка соединения',
+			'Невозможно подключится к серверу. Попробуйте перезагрузить страницу.',
+			'Детали',
 			'alert(remote._error);',
 			null,
-			'Dismiss');
+			'Отмена');
 		remote._controller.togglePeriodicSessionRefresh(false);
 	},
 

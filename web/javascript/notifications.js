@@ -12,7 +12,7 @@ $(document).ready(function () {
   updateMenuTitle();
   $(transmission).bind('downloadComplete seedingComplete', function (event, torrent) {
   	if (notificationsEnabled) {
-		var title = (event.type == 'downloadComplete' ? 'Download' : 'Seeding') + ' complete',
+		var title = (event.type == 'downloadComplete' ? 'Загрузка' : 'Раздача') + ' завершена',
 			content = torrent.getName(),
 			notification;
 	
@@ -25,7 +25,7 @@ $(document).ready(function () {
   });
 
   function updateMenuTitle() {
-    toggle.html((notificationsEnabled ? 'Disable' : 'Enable') + ' Notifications');
+    toggle.html((notificationsEnabled ? 'Выключить' : 'Включить') + ' уведомления');
   }
 
   Notifications.toggle = function () {
