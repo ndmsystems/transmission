@@ -42,8 +42,8 @@ THE SOFTWARE.
 /* Since we use a single UDP socket in order to implement multiple
    uTP sockets, try to set up huge buffers. */
 
-#define RECV_BUFFER_SIZE (4 * 1024 * 1024)
-#define SEND_BUFFER_SIZE (1 * 1024 * 1024)
+#define RECV_BUFFER_SIZE (2 * 1024 * 1024)
+#define SEND_BUFFER_SIZE (1 *  512 * 1024)
 #define SMALL_BUFFER_SIZE (32 * 1024)
 
 static void
