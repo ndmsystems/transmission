@@ -60,7 +60,7 @@
 enum
 {
 #ifdef TR_LIGHTWEIGHT
-  DEFAULT_CACHE_SIZE_MB = 2,
+  DEFAULT_CACHE_SIZE_MB = 1,
   DEFAULT_PREFETCH_ENABLED = false,
 #else
   DEFAULT_CACHE_SIZE_MB = 4,
@@ -319,12 +319,12 @@ tr_sessionGetDefaultSettings (tr_variant * d)
   tr_variantDictAddBool (d, TR_KEY_blocklist_enabled,               false);
   tr_variantDictAddStr  (d, TR_KEY_blocklist_url,                   "http://www.example.com/blocklist");
   tr_variantDictAddInt  (d, TR_KEY_cache_size_mb,                   DEFAULT_CACHE_SIZE_MB);
-  tr_variantDictAddBool (d, TR_KEY_dht_enabled,                     true);
+  tr_variantDictAddBool (d, TR_KEY_dht_enabled,                     false);
   tr_variantDictAddBool (d, TR_KEY_utp_enabled,                     true);
   tr_variantDictAddBool (d, TR_KEY_lpd_enabled,                     false);
   tr_variantDictAddStr  (d, TR_KEY_download_dir,                    tr_getDefaultDownloadDir ());
-  tr_variantDictAddInt  (d, TR_KEY_speed_limit_down,                100);
-  tr_variantDictAddBool (d, TR_KEY_speed_limit_down_enabled,        false);
+  tr_variantDictAddInt  (d, TR_KEY_speed_limit_down,                TR_MAX_SPEED_KB);
+  tr_variantDictAddBool (d, TR_KEY_speed_limit_down_enabled,        true);
   tr_variantDictAddInt  (d, TR_KEY_encryption,                      TR_DEFAULT_ENCRYPTION);
   tr_variantDictAddInt  (d, TR_KEY_idle_seeding_limit,              30);
   tr_variantDictAddBool (d, TR_KEY_idle_seeding_limit_enabled,      false);
@@ -340,14 +340,14 @@ tr_sessionGetDefaultSettings (tr_variant * d)
   tr_variantDictAddInt  (d, TR_KEY_peer_port_random_low,            49152);
   tr_variantDictAddInt  (d, TR_KEY_peer_port_random_high,           65535);
   tr_variantDictAddStr  (d, TR_KEY_peer_socket_tos,                 TR_DEFAULT_PEER_SOCKET_TOS_STR);
-  tr_variantDictAddBool (d, TR_KEY_pex_enabled,                     true);
-  tr_variantDictAddBool (d, TR_KEY_port_forwarding_enabled,         true);
+  tr_variantDictAddBool (d, TR_KEY_pex_enabled,                     false);
+  tr_variantDictAddBool (d, TR_KEY_port_forwarding_enabled,         false);
   tr_variantDictAddInt  (d, TR_KEY_preallocation,                   TR_PREALLOCATE_SPARSE);
   tr_variantDictAddBool (d, TR_KEY_prefetch_enabled,                DEFAULT_PREFETCH_ENABLED);
   tr_variantDictAddInt  (d, TR_KEY_peer_id_ttl_hours,               6);
   tr_variantDictAddBool (d, TR_KEY_queue_stalled_enabled,           true);
   tr_variantDictAddInt  (d, TR_KEY_queue_stalled_minutes,           30);
-  tr_variantDictAddReal (d, TR_KEY_ratio_limit,                     2.0);
+  tr_variantDictAddReal (d, TR_KEY_ratio_limit,                     1.5);
   tr_variantDictAddBool (d, TR_KEY_ratio_limit_enabled,             false);
   tr_variantDictAddBool (d, TR_KEY_rename_partial_files,            true);
   tr_variantDictAddBool (d, TR_KEY_rpc_authentication_required,     false);
@@ -371,7 +371,7 @@ tr_sessionGetDefaultSettings (tr_variant * d)
   tr_variantDictAddBool (d, TR_KEY_alt_speed_time_enabled,          false);
   tr_variantDictAddInt  (d, TR_KEY_alt_speed_time_end,              1020); /* 5pm */
   tr_variantDictAddInt  (d, TR_KEY_alt_speed_time_day,              TR_SCHED_ALL);
-  tr_variantDictAddInt  (d, TR_KEY_speed_limit_up,                  100);
+  tr_variantDictAddInt  (d, TR_KEY_speed_limit_up,                  TR_MAX_SPEED_KB);
   tr_variantDictAddBool (d, TR_KEY_speed_limit_up_enabled,          false);
   tr_variantDictAddInt  (d, TR_KEY_umask,                           022);
   tr_variantDictAddInt  (d, TR_KEY_upload_slots_per_torrent,        14);
@@ -1648,6 +1648,9 @@ void
 tr_sessionSetPeerLimit (tr_session * session, uint16_t n)
 {
   assert (tr_isSession (session));
+
+  if (n > TR_MAX_PEERS_COUNT)
+    n = TR_MAX_PEERS_COUNT;
 
   session->peerLimit = n;
 }

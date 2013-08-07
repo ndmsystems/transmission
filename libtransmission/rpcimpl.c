@@ -1889,11 +1889,11 @@ sessionSet (tr_session               * session,
   if (tr_variantDictFindBool (args_in, TR_KEY_lpd_enabled, &boolVal))
     tr_sessionSetLPDEnabled (session, boolVal);
 
-  if (tr_variantDictFindBool (args_in, TR_KEY_peer_port_random_on_start, &boolVal))
+/*  if (tr_variantDictFindBool (args_in, TR_KEY_peer_port_random_on_start, &boolVal))
     tr_sessionSetPeerPortRandomOnStart (session, boolVal);
 
   if (tr_variantDictFindInt (args_in, TR_KEY_peer_port, &i))
-    tr_sessionSetPeerPort (session, i);
+    tr_sessionSetPeerPort (session, i); */
 
   if (tr_variantDictFindBool (args_in, TR_KEY_port_forwarding_enabled, &boolVal))
     tr_sessionSetPortForwardingEnabled (session, boolVal);
