@@ -5,6 +5,10 @@
  * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  */
 
+function isInteger(value) {
+    return !isNaN(value && Math.floor(value) === parseInt(value));
+}
+
 function Inspector(controller) {
 
     var data = {
@@ -60,11 +64,11 @@ function Inspector(controller) {
 
         // update the name, which is shown on all the pages
         if (!torrents || !torrents.length)
-            name = 'No Selection';
+            name = 'Не выбрано';
         else if(torrents.length === 1)
             name = torrents[0].getName();
         else
-            name = '' + torrents.length+' Transfers Selected';
+            name = '' + torrents.length+' выбранных';
         setTextContent(e.name_lb, name || na);
 
         // update the visible page
@@ -86,9 +90,9 @@ function Inspector(controller) {
         var torrents = data.torrents,
             e = data.elements,
             fmt = Transmission.fmt,
-            none = 'None',
-            mixed = 'Mixed',
-            unknown = 'Unknown',
+            none = 'Н/Д',
+            mixed = '-',
+            unknown = '-',
             isMixed, allPaused, allFinished,
             str,
             baseline, it, s, i, t,
@@ -133,9 +137,9 @@ function Inspector(controller) {
             if( isMixed )
                 str = mixed;
             else if( allFinished )
-                str = 'Finished';
+                str = 'Загрузка завершена';
             else if( allPaused )
-                str = 'Paused';
+                str = 'Приостановлен';
             else
                 str = torrents[0].getStateString();
         }
@@ -169,9 +173,9 @@ function Inspector(controller) {
             if( !haveUnverified && !leftUntilDone )
                 str = fmt.size(haveVerified) + ' (100%)';
             else if( !haveUnverified )
-                str = fmt.size(haveVerified) + ' of ' + fmt.size(sizeWhenDone) + ' (' + str +'%)';
+                str = fmt.size(haveVerified) + ' из ' + fmt.size(sizeWhenDone) + ' (' + str +'%)';
             else
-                str = fmt.size(haveVerified) + ' of ' + fmt.size(sizeWhenDone) + ' (' + str +'%), ' + fmt.size(haveUnverified) + ' Unverified';
+                str = fmt.size(haveVerified) + ' из ' + fmt.size(sizeWhenDone) + ' (' + str +'%), ' + fmt.size(haveUnverified) + ' не проверено';
         }
         setTextContent(e.have_lb, str);
 
@@ -200,7 +204,7 @@ function Inspector(controller) {
                 f += t.getFailedEver();
             }
             if(f)
-                str = fmt.size(d) + ' (' + fmt.size(f) + ' corrupt)';
+                str = fmt.size(d) + ' (' + fmt.size(f) + ' испорчено)';
             else
                 str = fmt.size(d);
         }
@@ -227,7 +231,7 @@ function Inspector(controller) {
                     u += t.getUploadedEver();
                 }
             }
-            str = fmt.size(u) + ' (Ratio: ' + fmt.ratioString( Math.ratio(u,d))+')';
+            str = fmt.size(u) + ' (Рейтинг: ' + fmt.ratioString(Math.ratio(u,d))+')';
         }
         setTextContent(e.uploaded_lb, str);
 
@@ -297,9 +301,9 @@ function Inspector(controller) {
             if(d < 0)
                 str = none;
             else if(d < 5)
-                str = 'Active now';
+                str = 'Передача данных';
             else
-                str = fmt.timeInterval(d) + ' ago';
+                str = fmt.timeInterval(d) + ' назад';
         }
         setTextContent(e.last_activity_lb, str);
 
@@ -339,9 +343,9 @@ function Inspector(controller) {
             if(!size)
                 str = none;
             else if(pieceSize > 0)
-                str = fmt.size(size) + ' (' + pieces.toStringWithCommas() + ' pieces @ ' + fmt.mem(pieceSize) + ')';
+                str = fmt.size(size) + ' (' + pieces.toStringWithCommas() + ' частей @ ' + fmt.mem(pieceSize) + ')';
             else
-                str = fmt.size(size) + ' (' + pieces.toStringWithCommas() + ' pieces)';
+                str = fmt.size(size) + ' (' + pieces.toStringWithCommas() + ' частей)';
         }
         setTextContent(e.size_lb, str);
 
@@ -370,7 +374,7 @@ function Inspector(controller) {
             str = none;
         else {
             baseline = torrents[0].getPrivateFlag();
-            str = baseline ? 'Private to this tracker -- DHT and PEX disabled' : 'Public torrent';
+            str = baseline ? 'Это частный трекер - не используйте DHT и PEX' : 'Публичный торрент';
             for(i=0; t=torrents[i]; ++i) {
                 if(baseline != t.getPrivateFlag()) {
                     str = mixed;
@@ -425,11 +429,11 @@ function Inspector(controller) {
             if(mixed_creator && mixed_date)
                 str = mixed;
             else if(mixed_date && creator.length)
-                str = 'Created by ' + creator;
+                str = 'Создано ' + creator;
             else if(mixed_creator && date)
-                str = 'Created on ' + (new Date(date*1000)).toDateString();
+                str = 'В ' + (new Date(date*1000)).toDateString();
             else
-                str = 'Created by ' + creator + ' on ' + (new Date(date*1000)).toDateString();
+                str = 'Создано ' + creator + ' в ' + (new Date(date*1000)).toDateString();
         }
         setTextContent(e.origin_lb, str);
 
@@ -603,17 +607,17 @@ function Inspector(controller) {
             html.push('<table class="peer_list">',
                    '<tr class="inspector_peer_entry even">',
                    '<th class="encryptedCol"></th>',
-                   '<th class="upCol">Up</th>',
-                   '<th class="downCol">Down</th>',
+                   '<th class="upCol">Раздача</th>',
+                   '<th class="downCol">Загрузка</th>',
                    '<th class="percentCol">%</th>',
-                   '<th class="statusCol">Status</th>',
-                   '<th class="addressCol">Address</th>',
-                   '<th class="clientCol">Client</th>',
+                   '<th class="statusCol">Состояние</th>',
+                   '<th class="addressCol">Адрес</th>',
+                   '<th class="clientCol">Клиент</th>',
                    '</tr>');
             for (i=0; peer=peers[i]; ++i) {
                 parity = (i%2) ? 'odd' : 'even';
                 html.push('<tr class="inspector_peer_entry ', parity, '">',
-                       '<td>', (peer.isEncrypted ? '<div class="encrypted-peer-cell" title="Encrypted Connection">'
+                       '<td>', (peer.isEncrypted ? '<div class="encrypted-peer-cell" title="Шифрованный">'
                                                  : '<div class="unencrypted-peer-cell">'), '</div>', '</td>',
                        '<td>', (peer.rateToPeer ? fmt.speedBps(peer.rateToPeer) : ''), '</td>',
                        '<td>', (peer.rateToClient ? fmt.speedBps(peer.rateToClient) : ''), '</td>',
@@ -637,41 +641,45 @@ function Inspector(controller) {
         var timeUntilAnnounce, s = '';
         switch (tracker.announceState) {
             case Torrent._TrackerActive:
-                s = 'Announce in progress';
+                s = 'Анонсирование';
                 break;
             case Torrent._TrackerWaiting:
                 timeUntilAnnounce = tracker.nextAnnounceTime - ((new Date()).getTime() / 1000);
                 if (timeUntilAnnounce < 0) {
                     timeUntilAnnounce = 0;
                 }
-                s = 'Next announce in ' + Transmission.fmt.timeInterval(timeUntilAnnounce);
+                if (!isInteger(timeUntilAnnounce)) {
+                    s = 'Время следующего анонса неизвестно';
+                } else {
+                    s = 'Следующий анонс через ' + Transmission.fmt.timeInterval(timeUntilAnnounce);
+                }
                 break;
             case Torrent._TrackerQueued:
-                s = 'Announce is queued';
+                s = 'Анонсирование запланировано';
                 break;
             case Torrent._TrackerInactive:
                 s = tracker.isBackup ?
-                    'Tracker will be used as a backup' :
-                    'Announce not scheduled';
+                    'Трекер используется в качестве резервного' :
+                    'Анонсирование не запланировано';
                 break;
             default:
-                s = 'unknown announce state: ' + tracker.announceState;
+                s = 'Состояние анонсирования неизвестно: ' + tracker.announceState;
         }
         return s;
     },
 
     lastAnnounceStatus = function(tracker) {
 
-        var lastAnnounceLabel = 'Last Announce',
-            lastAnnounce = [ 'N/A' ],
+        var lastAnnounceLabel = 'Последний анонс',
+            lastAnnounce = [ 'Н/Д' ],
         lastAnnounceTime;
 
         if (tracker.hasAnnounced) {
             lastAnnounceTime = Transmission.fmt.timestamp(tracker.lastAnnounceTime);
             if (tracker.lastAnnounceSucceeded) {
-                lastAnnounce = [ lastAnnounceTime, ' (got ',  Transmission.fmt.countString('peer','peers',tracker.lastAnnouncePeerCount), ')' ];
+                lastAnnounce = [ lastAnnounceTime, ' (имеется ',  Transmission.fmt.countString('часть', 'частей', tracker.lastAnnouncePeerCount), ')' ];
             } else {
-                lastAnnounceLabel = 'Announce error';
+                lastAnnounceLabel = 'Ошибка анонсирования';
                 lastAnnounce = [ (tracker.lastAnnounceResult ? (tracker.lastAnnounceResult + ' - ') : ''), lastAnnounceTime ];
             }
         }
@@ -680,8 +688,8 @@ function Inspector(controller) {
 
     lastScrapeStatus = function(tracker) {
 
-        var lastScrapeLabel = 'Last Scrape',
-            lastScrape = 'N/A',
+        var lastScrapeLabel = 'Последний scrape-анонс',
+            lastScrape = 'Н/Д',
         lastScrapeTime;
 
         if (tracker.hasScraped) {
@@ -689,7 +697,7 @@ function Inspector(controller) {
             if (tracker.lastScrapeSucceeded) {
                 lastScrape = lastScrapeTime;
             } else {
-                lastScrapeLabel = 'Scrape error';
+                lastScrapeLabel = 'Ошибка scrape-анонсирования';
                 lastScrape = (tracker.lastScrapeResult ? tracker.lastScrapeResult + ' - ' : '') + lastScrapeTime;
             }
         }
@@ -700,7 +708,7 @@ function Inspector(controller) {
         var i, j, tier, tracker, trackers, tor,
             html, parity, lastAnnounceStatusHash,
             announceState, lastScrapeStatusHash,
-            na = 'N/A',
+            na = 'Н/Д',
             trackers_list = data.elements.trackers_list,
             torrents = data.torrents;
 
@@ -726,7 +734,7 @@ function Inspector(controller) {
                     tier = tracker.tier;
 
                     html.push('<div class="inspector_group_label">',
-                          'Tier ', tier+1, '</div>',
+                          'Номер ', tier+1, '</div>',
                           '<ul class="tier_list">');
                 }
 
@@ -742,9 +750,9 @@ function Inspector(controller) {
                       '<div>', announceState, '</div>',
                       '<div>', lastScrapeStatusHash['label'], ': ', lastScrapeStatusHash['value'], '</div>',
                       '</div><table class="tracker_stats">',
-                      '<tr><th>Seeders:</th><td>', (tracker.seederCount > -1 ? tracker.seederCount : na), '</td></tr>',
-                      '<tr><th>Leechers:</th><td>', (tracker.leecherCount > -1 ? tracker.leecherCount : na), '</td></tr>',
-                      '<tr><th>Downloads:</th><td>', (tracker.downloadCount > -1 ? tracker.downloadCount : na), '</td></tr>',
+                      '<tr><th>Сидеры:</th><td>', (tracker.seederCount > -1 ? tracker.seederCount : na), '</td></tr>',
+                      '<tr><th>Личеры:</th><td>', (tracker.leecherCount > -1 ? tracker.leecherCount : na), '</td></tr>',
+                      '<tr><th>Загрузки:</th><td>', (tracker.downloadCount > -1 ? tracker.downloadCount : na), '</td></tr>',
                       '</table></li>');
             }
             if (tier !== -1) // close last tier

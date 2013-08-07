@@ -5,28 +5,40 @@
  * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  */
 
+function _n(num, id) {
+    num %= 100;
+    if (num > 19 || num < 5)
+        switch (num % 10) {
+            case 1: return id[0];
+            case 2:
+            case 3:
+            case 4: return id[1];
+        }
+    return id[2];
+}
+
 Transmission.fmt = (function()
 {
 	var speed_K = 1000;
-	var speed_B_str =  'B/s';
-	var speed_K_str = 'kB/s';
-	var speed_M_str = 'MB/s';
-	var speed_G_str = 'GB/s';
-	var speed_T_str = 'TB/s';
+	var speed_B_str =  'Б/с';
+	var speed_K_str = 'Кб/с';
+	var speed_M_str = 'Мб/с';
+	var speed_G_str = 'Гб/с';
+	var speed_T_str = 'Тб/с';
 
 	var size_K = 1000;
-	var size_B_str =  'B';
-	var size_K_str = 'kB';
-	var size_M_str = 'MB';
-	var size_G_str = 'GB';
-	var size_T_str = 'TB';
+	var size_B_str =  'Б';
+	var size_K_str = 'Кб';
+	var size_M_str = 'Мб';
+	var size_G_str = 'Гб';
+	var size_T_str = 'Тб';
 
 	var mem_K = 1024;
-	var mem_B_str =   'B';
-	var mem_K_str = 'KiB';
-	var mem_M_str = 'MiB';
-	var mem_G_str = 'GiB';
-	var mem_T_str = 'TiB';
+	var mem_B_str =   'Б';
+	var mem_K_str = 'Кб';
+	var mem_M_str = 'Мб';
+	var mem_G_str = 'Гб';
+	var mem_T_str = 'Тб';
 
 	return {
 
@@ -70,7 +82,7 @@ Transmission.fmt = (function()
 		 */
 		ratioString: function(x) {
 			if (x === -1)
-				return "None";
+				return '-';
 			if (x === -2)
 				return '&infin;';
 			return this.percentString(x);
@@ -185,14 +197,21 @@ Transmission.fmt = (function()
 
 		timeInterval: function(seconds)
 		{
+
+
 			var days    = Math.floor (seconds / 86400),
 			    hours   = Math.floor ((seconds % 86400) / 3600),
 			    minutes = Math.floor ((seconds % 3600) / 60),
 			    seconds = Math.floor (seconds % 60),
-			    d = days    + ' ' + (days    > 1 ? 'days'    : 'day'),
-			    h = hours   + ' ' + (hours   > 1 ? 'hours'   : 'hour'),
-			    m = minutes + ' ' + (minutes > 1 ? 'minutes' : 'minute'),
-			    s = seconds + ' ' + (seconds > 1 ? 'seconds' : 'second');
+				/*             1          2-4        5-0 & 10-19 */
+			    dayNames =    ["день",    "дня",     "дней"   ],
+			    hourNames =   ["час",     "часа",    "часов"  ],
+			    minuteNames = ["минута",  "минуты",  "минут"  ],
+			    secondNames = ["секунда", "секунды", "секунд" ],
+				d = days    + ' ' + _n(days,    dayNames   ),
+			    h = hours   + ' ' + _n(hours,   hourNames  ),
+			    m = minutes + ' ' + _n(minutes, minuteNames),
+			    s = seconds + ' ' + _n(seconds, secondNames);
 
 			if (days) {
 				if (days >= 4 || !hours)
@@ -215,7 +234,7 @@ Transmission.fmt = (function()
 		timestamp: function(seconds)
 		{
 			if (!seconds)
-				return 'N/A';
+				return 'Н/Д';
 
 			var myDate = new Date(seconds*1000);
 			var now = new Date();
@@ -229,13 +248,13 @@ Transmission.fmt = (function()
 			var dateDiff = now.getDate() - myDate.getDate();
 			if (sameYear && sameMonth && Math.abs(dateDiff) <= 1){
 				if (dateDiff === 0){
-					date = "Today";
+					date = "Сегодня";
 				}
 				else if (dateDiff === 1){
-					date = "Yesterday";
+					date = "Вчера";
 				}
 				else{
-					date = "Tomorrow";
+					date = "Завтра";
 				}
 			}
 			else{
@@ -287,18 +306,18 @@ Transmission.fmt = (function()
 				var explanation = null;
 				switch (flag)
 				{
-					case "O": explanation = "Optimistic unchoke"; break;
-					case "D": explanation = "Downloading from this peer"; break;
-					case "d": explanation = "We would download from this peer if they'd let us"; break;
-					case "U": explanation = "Uploading to peer"; break;
-					case "u": explanation = "We would upload to this peer if they'd ask"; break;
-					case "K": explanation = "Peer has unchoked us, but we're not interested"; break;
-					case "?": explanation = "We unchoked this peer, but they're not interested"; break;
-					case "E": explanation = "Encrypted Connection"; break;
-					case "H": explanation = "Peer was discovered through Distributed Hash Table (DHT)"; break;
-					case "X": explanation = "Peer was discovered through Peer Exchange (PEX)"; break;
-					case "I": explanation = "Peer is an incoming connection"; break;
-					case "T": explanation = "Peer is connected via uTP"; break;
+					case "O": explanation = "Сейчас начнется скачивание"; break;
+					case "D": explanation = "Загрузка с этого пира"; break;
+					case "d": explanation = "Загрузка с этого пира, если нам позволят"; break;
+					case "U": explanation = "Отдача этому пиру"; break;
+					case "u": explanation = "Отдача этому пиру, если нас попросят"; break;
+					case "K": explanation = "Пир готов отдать нам, но мы не заинтересованы"; break;
+					case "?": explanation = "Мы готовы отдать пиру, но он не заинтересован"; break;
+					case "E": explanation = "Соединение с шифрованием"; break;
+					case "H": explanation = "Пир был обнаружен через DHT"; break;
+					case "X": explanation = "Пир был обнаружен через PEX"; break;
+					case "I": explanation = "Пир входящего соединения"; break;
+					case "T": explanation = "Пир подключается по uTP"; break;
 				}
 
 				if (!explanation) { 

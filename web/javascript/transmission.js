@@ -158,11 +158,11 @@ Transmission.prototype =
 		if (!$.browser.safari)
 		{
 			search_box.addClass('blur');
-			search_box[0].value = 'Filter';
+			search_box[0].value = 'Фильтр';
 			search_box.bind('blur', function() {
 				if (this.value === '') {
 					$(this).addClass('blur');
-					this.value = 'Filter';
+					this.value = 'Фильтр';
 					tr.setFilterText(null);
 				}
 			}).bind('focus', function() {
@@ -247,10 +247,10 @@ Transmission.prototype =
 		{
 			e = $('label#add-dialog-folder-label');
 			if (bytes > 0)
-				str = '  <i>(' + Transmission.fmt.size(bytes) + ' Free)</i>';
+				str = '  <i>(' + Transmission.fmt.size(bytes) + ' свободно)</i>';
 			else
 				str = '';
-			e.html ('Destination folder' + str + ':');
+			e.html ('Папка ' + str + ':');
 		}
 	},
 
@@ -689,7 +689,7 @@ Transmission.prototype =
 				o = 'Transmission ' + this.serverVersion;
 				$('#about-dialog #about-title').html(o);
 				$('#about-dialog').dialog({
-					title: 'About',
+					title: 'О программе',
 					show: 'fade',
 					hide: 'fade'
 				});
@@ -961,7 +961,7 @@ Transmission.prototype =
 						};
 						remote.sendRequest (o, function(response) {
 							if (response.result != 'success')
-								alert ('Error adding "' + file.name + '": ' + response.result);
+								alert ('Ошибка при добавлении "' + file.name + '": ' + response.result);
 						});
 					}
 				}
@@ -982,7 +982,7 @@ Transmission.prototype =
 				};
 				remote.sendRequest (o, function(response) {
 					if (response.result != 'success')
-						alert ('Error adding "' + url + '": ' + response.result);
+						alert ('Ошибка при добавлении "' + url + '": ' + response.result);
 				});
 			}
 		}
@@ -1032,15 +1032,15 @@ Transmission.prototype =
 		if (torrents.length === 1)
 		{
 			var torrent = torrents[0],
-			    header = 'Remove ' + torrent.getName() + '?',
-			    message = 'Once removed, continuing the transfer will require the torrent file. Are you sure you want to remove it?';
-			dialog.confirm(header, message, 'Remove', 'transmission.removeTorrents', torrents);
+			    header = 'Удалить ' + torrent.getName() + '?',
+			    message = 'Для возможности продолжения обмена требуется торрент-файл. Вы уверены, что хотите его удалить?';
+			dialog.confirm(header, message, 'Удалить', 'transmission.removeTorrents', torrents);
 		}
 		else
 		{
-			var header = 'Remove ' + torrents.length + ' transfers?',
-			    message = 'Once removed, continuing the transfers will require the torrent files. Are you sure you want to remove them?';
-			dialog.confirm(header, message, 'Remove', 'transmission.removeTorrents', torrents);
+			var header = 'Удалить ' + torrents.length + ' ' + (torrents.length < 5 ? 'передачи' : 'передач') + '?',
+			    message = 'Для возможности продолжения обмена требуются торрент-файлы. Вы уверены, что хотите удалить их?';
+			dialog.confirm(header, message, 'Удалить', 'transmission.removeTorrents', torrents);
 		}
 	},
 
@@ -1049,15 +1049,15 @@ Transmission.prototype =
 		if (torrents.length === 1)
 		{
 			var torrent = torrents[0],
-			    header = 'Remove ' + torrent.getName() + ' and delete data?',
-			    message = 'All data downloaded for this torrent will be deleted. Are you sure you want to remove it?';
-			dialog.confirm(header, message, 'Remove', 'transmission.removeTorrentsAndData', torrents);
+			    header = 'Удалить ' + torrent.getName() + ' вместе с данными?',
+			    message = 'Все загруженные данные вместе с торрент-файлом будут удалены. Вы уверены, что хотите удалить их?';
+			dialog.confirm(header, message, 'Удалить', 'transmission.removeTorrentsAndData', torrents);
 		}
 		else
 		{
-			var header = 'Remove ' + torrents.length + ' transfers and delete data?',
-			    message = 'All data downloaded for these torrents will be deleted. Are you sure you want to remove them?';
-			dialog.confirm(header, message, 'Remove', 'transmission.removeTorrentsAndData', torrents);
+			var header = 'Удалить ' + torrents.length + ' ' + (torrents.length < 5 ? 'передачи' : 'передач') + ' вместе с данными?',
+			    message = 'Все данные, связанные с удаляемыми торрент-файлами, будут удалены. Вы уверены, что хотите удалить торрент-файлы и их данные?';
+			dialog.confirm(header, message, 'Удалить', 'transmission.removeTorrentsAndData', torrents);
 		}
 	},
 
@@ -1203,12 +1203,12 @@ Transmission.prototype =
 		{
 			b = o[RPC._TurtleState];
 			e = $('#turtle-button');
-			text = [ 'Click to ', (b?'disable':'enable'),
-			         ' Temporary Speed Limits (',
+			text = [ 'Нажмите, чтобы ', (b ? 'выключить' : 'включить'),
+			         ' временное ограничение скорости (',
 			         fmt.speed(o[RPC._TurtleUpSpeedLimit]),
-			         ' up,',
+			         ' раздачи,',
 			         fmt.speed(o[RPC._TurtleDownSpeedLimit]),
-			         ' down)' ].join('');
+			         ' загрузки)' ].join('');
 			e.toggleClass('selected', b);
 			e.attr('title', text);
 		}
@@ -1220,7 +1220,7 @@ Transmission.prototype =
 			limited = o[RPC._DownSpeedLimited];
 
 			e = menu.find('#limited_download_rate');
-                        e.html('Limit (' + fmt.speed(limit) + ')');
+                        e.html('Ограничено (' + fmt.speed(limit) + ')');
 
                         if (!limited)
                         	e = menu.find('#unlimited_download_rate');
@@ -1234,7 +1234,7 @@ Transmission.prototype =
 			limited = o[RPC._UpSpeedLimited];
 
 			e = menu.find('#limited_upload_rate');
-                        e.html('Limit (' + fmt.speed(limit) + ')');
+                        e.html('Ограничено (' + fmt.speed(limit) + ')');
 
                         if (!limited)
                         	e = menu.find('#unlimited_upload_rate');
@@ -1262,7 +1262,7 @@ Transmission.prototype =
 		$('#speed-dn-label').text( fmt.speedBps( d ) );
 
 		// visible torrents
-		$('#filter-count').text( fmt.countString('Transfer','Transfers',this._rows.length ) );
+		$('#filter-count').text( fmt.countString('Загрузка','Загрузки',this._rows.length ) );
 	},
 
 	setEnabled: function(key, flag)
@@ -1284,9 +1284,9 @@ Transmission.prototype =
 
 		// build the new html
 		if (!this.filterTracker)
-			str = '<option value="all" selected="selected">All</option>';
+			str = '<option value="all" selected="selected">Все</option>';
 		else
-			str = '<option value="all">All</option>';
+			str = '<option value="all">Все</option>';
 		for (i=0; name=names[i]; ++i) {
 			o = trackers[name];
 			str += '<option value="' + o.domain + '"';
@@ -1687,7 +1687,7 @@ Transmission.prototype =
 
 		s = stats["cumulative-stats"];
 		ratio = Math.ratio(s.uploadedBytes,s.downloadedBytes);
-		$('#stats-total-count').html(s.sessionCount + " times");
+		$('#stats-total-count').html(s.sessionCount + " раз");
 		$('#stats-total-uploaded').html(fmt.size(s.uploadedBytes));
 		$('#stats-total-downloaded').html(fmt.size(s.downloadedBytes));
 		$('#stats-total-ratio').html(fmt.ratioString(ratio));
@@ -1703,7 +1703,7 @@ Transmission.prototype =
 			close: $.proxy(this.onStatsDialogClosed,this),
 			show: 'fade',
 			hide: 'fade',
-			title: 'Statistics'
+			title: 'Статистика'
 		});
 	},
 

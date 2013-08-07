@@ -45,7 +45,7 @@ function FileRow(torrent, depth, name, indices, even)
 	{
 		var pct = 100 * (fields.size ? (fields.have / fields.size) : 1.0),
 		    c = [ Transmission.fmt.size(fields.have),
-			  ' of ',
+			  ' из ',
 			  Transmission.fmt.size(fields.size),
 			  ' (',
 			  Transmission.fmt.percentString(pct),
@@ -119,7 +119,7 @@ function FileRow(torrent, depth, name, indices, even)
 		e = document.createElement('input');
 		e.type = 'checkbox';
 		e.className = "file_wanted_control";
-		e.title = 'Download file';
+		e.title = 'Приоритет';
 		$(e).change(function(ev){ fireWantedChanged( $(ev.currentTarget).prop('checked')); });
 		root.checkbox = e;
 		root.appendChild(e);
@@ -130,20 +130,20 @@ function FileRow(torrent, depth, name, indices, even)
 
 			e = document.createElement('div');
 			e.className = 'low';
-			e.title = 'Low Priority';
+			e.title = 'Низкий';
 			$(e).click(function(){ firePriorityChanged(-1); });
 			elements.priority_low_button = e;
 			box.appendChild(e);
 
 			e = document.createElement('div');
 			e.className = 'normal';
-			e.title = 'Normal Priority';
+			e.title = 'Нормальный';
 			$(e).click(function(){ firePriorityChanged(0); });
 			elements.priority_normal_button = e;
 			box.appendChild(e);
 
 			e = document.createElement('div');
-			e.title = 'High Priority';
+			e.title = 'Высокий';
 			e.className = 'high';
 			$(e).click(function(){ firePriorityChanged(1); });
 			elements.priority_high_button = e;
