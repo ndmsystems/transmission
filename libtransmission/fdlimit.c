@@ -73,6 +73,27 @@
  #define O_SEQUENTIAL 0
 #endif
 
+#define TUXERA_IOCTL_FALLOCATE_FL_KEEP_SIZE 0x0001
+#define TUXERA_IOCTL_FALLOCATE_SKIP_ZEROING 0x1000
+#define TUXERA_IOCTL_FALLOCATE _IOW('N', 213, TUXERA_IOCTL_FALLOCATE_ARGS)
+
+typedef struct _TUXERA_IOCTL_FALLOCATE_ARGS {
+  uint64_t offset;
+  uint64_t length;
+  uint32_t mode;
+} __attribute__ ((packed)) TUXERA_IOCTL_FALLOCATE_ARGS;
+
+static bool
+tuxera_fallocate (int fd, uint64_t length)
+{
+  TUXERA_IOCTL_FALLOCATE_ARGS fa = {
+    .offset = 0,      /* offset in bytes */
+    .length = length, /* length in bytes */
+    .mode = TUXERA_IOCTL_FALLOCATE_SKIP_ZEROING
+  };
+
+  return ioctl(fd, TUXERA_IOCTL_FALLOCATE, &fa) == 0;
+}
 
 static bool
 preallocate_file_sparse (int fd, uint64_t length)
@@ -87,6 +108,9 @@ preallocate_file_sparse (int fd, uint64_t length)
   if (!success) /* fallocate64 is always preferred, so try it first */
     success = !fallocate64 (fd, 0, 0, length);
 #endif
+
+  if (!success)
+    success = tuxera_fallocate (fd, length);
 
   if (!success) /* fallback: the old-style seek-and-write */
     success = (lseek (fd, length-1, SEEK_SET) != -1)
@@ -144,10 +168,16 @@ preallocate_file_full (const char * filename, uint64_t length)
           success = !fcntl (fd, F_PREALLOCATE, &fst);
         }
 # endif
-# ifdef HAVE_POSIX_FALLOCATE
+# if 0 /* HAVE_POSIX_FALLOCATE */
       if (!success)
         success = !posix_fallocate (fd, 0, length);
 # endif
+
+      if (!success)
+        success = tuxera_fallocate (fd, length);
+
+      if (!success) /* fake allocate */
+        success = !ftruncate (fd, length);
 
       if (!success) /* if nothing else works, do it the old-fashioned way */
         {
