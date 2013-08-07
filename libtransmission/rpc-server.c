@@ -38,12 +38,23 @@
 #include "variant.h"
 #include "web.h"
 
+#ifdef HAVE_NDM /* { */
+# include <ndm/core.h>
+
+#ifndef  __TARGET_REALM__
+# define __TARGET_REALM__			"Undefined realm"
+#endif
+
+#else /* } HAVE_NDM { */
+
 /* session-id is used to make cross-site request forgery attacks difficult.
  * Don't disable this feature unless you really know what you're doing!
  * http://en.wikipedia.org/wiki/Cross-site_request_forgery
  * http://shiflett.org/articles/cross-site-request-forgeries
  * http://www.webappsec.org/lists/websecurity/archive/2008-04/msg00037.html */
 #define REQUIRE_SESSION_ID
+
+#endif /* } HAVE_NDM */
 
 #define MY_NAME "RPC Server"
 #define MY_REALM "Transmission"
@@ -580,6 +591,48 @@ handle_rpc (struct evhttp_request * req, struct tr_rpc_server  * server)
     }
 }
 
+#ifdef HAVE_NDM // {
+static bool
+ndm_login (struct tr_rpc_server * server,
+           const char           * login,
+           const char           * password)
+{
+  bool authenticated = false;
+
+  if (login[0] != '\0' && password[0] != '\0' &&
+      server->username != NULL && strcmp(server->username, login) == 0 &&
+      server->password != NULL && strcmp(server->password, password) == 0)
+    {
+      authenticated = true;
+    }
+  else
+    {
+      struct ndm_core_t * core = ndm_core_open("transmission/ci", 1000, NDM_CORE_DEFAULT_CACHE_MAX_SIZE);
+
+      if (core != NULL)
+        {
+          if (ndm_core_authenticate(core, login, password, __TARGET_REALM__, "torrent", &authenticated))
+            {
+              if (authenticated)
+                {
+                  tr_rpcSetUsername(server, login);
+                  tr_rpcSetPassword(server, password);
+                }
+              else
+                {
+                  tr_free(server->username);
+                  server->username = NULL;
+                  tr_free(server->password);
+                  server->password = NULL;
+                }
+            }
+          ndm_core_close(&core);
+        }
+    }
+  return authenticated;
+}
+#endif // } HAVE_NDM
+
 static bool
 isAddressAllowed (const tr_rpc_server * server, const char * address)
 {
@@ -595,6 +648,7 @@ isAddressAllowed (const tr_rpc_server * server, const char * address)
   return false;
 }
 
+#ifdef REQUIRE_SESSION_ID
 static bool
 test_session_id (struct tr_rpc_server * server, struct evhttp_request * req)
 {
@@ -603,6 +657,7 @@ test_session_id (struct tr_rpc_server * server, struct evhttp_request * req)
   const bool success =  theirs && !strcmp (theirs, ours);
   return success;
 }
+#endif
 
 static void
 handle_request (struct evhttp_request * req, void * arg)
@@ -638,9 +693,13 @@ handle_request (struct evhttp_request * req, void * arg)
             "<p>If you're still using ACLs, use a whitelist instead. See the transmission-daemon manpage for details.</p>");
         }
       else if (server->isPasswordEnabled
+#ifdef HAVE_NDM // {
+                 && (!pass || !user || !ndm_login(server, user, pass)))
+#else  // } HAVE_NDM {
                  && (!pass || !user || strcmp (server->username, user)
-                                     || !tr_ssha1_matches (server->password,
-                                                           pass)))
+                                    || !tr_ssha1_matches (server->password,
+                                                          pass)))
+#endif // } HAVE_NDM
         {
           evhttp_add_header (req->output_headers,
                              "WWW-Authenticate",
@@ -860,7 +919,7 @@ tr_rpcSetUsername (tr_rpc_server * server, const char * username)
 {
   char * tmp = server->username;
   server->username = tr_strdup (username);
-  dbgmsg ("setting our Username to [%s]", server->username);
+  dbgmsg ("setting our Username to [%s]", tr_rpcGetUsername(server));
   tr_free (tmp);
 }
 
@@ -875,11 +934,13 @@ tr_rpcSetPassword (tr_rpc_server * server,
                    const char *    password)
 {
   tr_free (server->password);
+#ifndef HAVE_NDM // {
   if (*password != '{')
     server->password = tr_ssha1 (password);
   else
+#endif // } !HAVE_NDM
     server->password = strdup (password);
-  dbgmsg ("setting our Password to [%s]", server->password);
+  dbgmsg ("setting our Password to [%s]", tr_rpcGetPassword(server));
 }
 
 const char*
@@ -998,6 +1059,7 @@ tr_rpcInit (tr_session  * session, tr_variant * settings)
   else
     tr_rpcSetWhitelist (s, str);
 
+#ifndef HAVE_NDM // {
   key = TR_KEY_rpc_username;
   if (!tr_variantDictFindStr (settings, key, &str, NULL))
     missing_settings_key (key);
@@ -1009,6 +1071,7 @@ tr_rpcInit (tr_session  * session, tr_variant * settings)
     missing_settings_key (key);
   else
     tr_rpcSetPassword (s, str);
+#endif // } !HAVE_NDM
 
   key = TR_KEY_rpc_bind_address;
   if (!tr_variantDictFindStr (settings, key, &str, NULL))
