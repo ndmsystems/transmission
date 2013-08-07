@@ -1112,13 +1112,15 @@ iframe#torrent_upload_frame {
   border-top: 1px solid #ddd;
   margin: 5px 0;
   padding: 0px;
-  background: transparent; }
+  background: transparent !important; }
 
 .trans_menu li span.arrow {
   float: right; }
 
 .trans_menu li.hover li.hover span.arrow, .trans_menu li.hover li.hover li.hover span.selected {
   color: white; }
+
+.trans_menu ul.innerBox li.hover { color: white; background: #2244ee; }
 
 .trans_menu span.selected {
   margin: 0 3px 0 -15px;
