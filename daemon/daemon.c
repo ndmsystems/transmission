@@ -489,10 +489,10 @@ main (int argc, char ** argv)
                       break;
         }
     }
-
+/*
     if (foreground && !logfile)
         logfile = stderr;
-
+*/
     if (!loaded)
     {
         printMessage (logfile, TR_LOG_ERROR, MY_NAME, "Error loading config file -- exiting.", __FILE__, __LINE__);
@@ -578,7 +578,7 @@ main (int argc, char ** argv)
     }
 
 #ifdef HAVE_SYSLOG
-    if (!foreground)
+    /* if (!foreground) */
         openlog (MY_NAME, LOG_CONS|LOG_PID, LOG_DAEMON);
 #endif
 
@@ -612,7 +612,7 @@ main (int argc, char ** argv)
 
     /* shutdown */
 #if HAVE_SYSLOG
-    if (!foreground)
+    /* if (!foreground) */
     {
         syslog (LOG_INFO, "%s", "Closing session");
         closelog ();
