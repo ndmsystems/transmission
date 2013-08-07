@@ -53,6 +53,10 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "natpmp.h"
 #include "getgateway.h"
 
+int sendpendingrequest(natpmp_t * p);
+int sendnatpmprequest(natpmp_t * p);
+int readnatpmpresponse(natpmp_t * p, natpmpresp_t * response);
+
 LIBSPEC int initnatpmp(natpmp_t * p, int forcegw, in_addr_t forcedgw)
 {
 #ifdef WIN32
