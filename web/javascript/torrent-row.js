@@ -164,11 +164,11 @@ TorrentRendererFull.prototype =
 			if (webseed_count && peer_count)
 			{
 				// Downloading from 2 of 3 peer(s) and 2 webseed(s)
-				return [ 'Downloading from',
+				return [ 'Загрузка',
 				         t.getPeersSendingToUs(),
-				         'of',
-				         fmt.countString('peer','peers',peer_count),
-				         'and',
+				         'из',
+				         fmt.countString('части','частей',peer_count),
+				         'и',
 				         fmt.countString('web seed','web seeds',webseed_count),
 				         '-',
 				         TorrentRendererHelper.formatDL(t),
@@ -177,7 +177,7 @@ TorrentRendererFull.prototype =
 			else if (webseed_count)
 			{
 				// Downloading from 2 webseed(s)
-				return [ 'Downloading from',
+				return [ 'Загрузка',
 				         fmt.countString('web seed','web seeds',webseed_count),
 				         '-',
 				         TorrentRendererHelper.formatDL(t),
@@ -186,10 +186,10 @@ TorrentRendererFull.prototype =
 			else
 			{
 				// Downloading from 2 of 3 peer(s)
-				return [ 'Downloading from',
+				return [ 'Загрузка',
 				         t.getPeersSendingToUs(),
-				         'of',
-				         fmt.countString('peer','peers',peer_count),
+				         'из',
+				         fmt.countString('части','частей',peer_count),
 				         '-',
 				         TorrentRendererHelper.formatDL(t),
 				         TorrentRendererHelper.formatUL(t) ].join(' ');
@@ -197,17 +197,17 @@ TorrentRendererFull.prototype =
 		}
 
 		if (t.isSeeding())
-			return [ 'Seeding to',
+			return [ 'Раздача',
 			         t.getPeersGettingFromUs(),
-			         'of',
-			         fmt.countString ('peer','peers',t.getPeersConnected()),
+			         'из',
+			         fmt.countString ('части','частей',t.getPeersConnected()),
 			         '-',
 			         TorrentRendererHelper.formatUL(t) ].join(' ');
 
 		if (t.isChecking())
-			return [ 'Verifying local data (',
+			return [ 'Локальная проверка данных (',
 			         Transmission.fmt.percentString(100.0 * t.getRecheckProgress()),
-			         '% tested)' ].join('');
+			         '% проверено)' ].join('');
 
 		return t.getStateString();
 	},
@@ -216,7 +216,7 @@ TorrentRendererFull.prototype =
 	{
 		if (t.needsMetaData()) {
 			var percent = 100 * t.getMetadataPercentComplete();
-			return [ "Magnetized transfer - retrieving metadata (",
+			return [ "Извлечение метаданных (",
 			         Transmission.fmt.percentString(percent),
 			         "%)" ].join('');
 		}
@@ -231,18 +231,18 @@ TorrentRendererFull.prototype =
 				c = [ Transmission.fmt.size(totalSize) ];
 			else // partial seed: '127.21 MiB of 698.05 MiB (18.2%)'
 				c = [ Transmission.fmt.size(sizeWhenDone),
-				      ' of ',
+				      ' из ',
 				      Transmission.fmt.size(t.getTotalSize()),
 				      ' (', t.getPercentDoneStr(), '%)' ];
 			// append UL stats: ', uploaded 8.59 GiB (Ratio: 12.3)'
-			c.push(', uploaded ',
+			c.push(', роздано ',
 			        Transmission.fmt.size(t.getUploadedEver()),
-			        ' (Ratio ',
+			        ' (Рейтинг ',
 			        Transmission.fmt.ratioString(t.getUploadRatio()),
 			        ')');
 		} else { // not done yet
 			c = [ Transmission.fmt.size(sizeWhenDone - t.getLeftUntilDone()),
-			      ' of ', Transmission.fmt.size(sizeWhenDone),
+			      ' из ', Transmission.fmt.size(sizeWhenDone),
 			      ' (', t.getPercentDoneStr(), '%)' ];
 		}
 
@@ -251,10 +251,10 @@ TorrentRendererFull.prototype =
 			c.push(' - ');
 			var eta = t.getETA();
 			if (eta < 0 || eta >= (999*60*60) /* arbitrary */)
-				c.push('remaining time unknown');
+				c.push('оставшееся время неизвестно');
 			else
 				c.push(Transmission.fmt.timeInterval(t.getETA()),
-				        ' remaining');
+				        ' осталось');
 		}
 
 		return c.join('');
@@ -281,7 +281,7 @@ TorrentRendererFull.prototype =
 		// pause/resume button
 		var is_stopped = t.isStopped();
 		e = root._pause_resume_button_image;
-		e.alt = is_stopped ? 'Resume' : 'Pause';
+		e.alt = is_stopped ? 'Продолжить' : 'Приостановить';
 		e.className = is_stopped ? 'torrent_resume' : 'torrent_pause';
 	}
 };
@@ -328,7 +328,7 @@ TorrentRendererCompact.prototype =
 			var have_dn = t.getDownloadSpeed() > 0,
 			    have_up = t.getUploadSpeed() > 0;
 			if (!have_up && !have_dn)
-				return 'Idle';
+				return 'Ожидание';
 			var s = '';
 			if (have_dn)
 				s += TorrentRendererHelper.formatDL(t);
@@ -339,7 +339,7 @@ TorrentRendererCompact.prototype =
 			return s;
 		}
 		if (t.isSeeding())
-			return [ 'Ratio: ',
+			return [ 'Рейтинг: ',
 			         Transmission.fmt.ratioString(t.getUploadRatio()),
 			         ', ',
 			         TorrentRendererHelper.formatUL(t) ].join('');

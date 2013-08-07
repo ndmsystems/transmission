@@ -76,7 +76,7 @@ function PrefsDialog(remote) {
     onPortChecked = function(response)
     {
         var is_open = response['arguments']['port-is-open'],
-            text = 'Port is <b>' + (is_open ? 'Open' : 'Closed') + '</b>',
+            text = 'Порт <b>' + (is_open ? 'открыт' : 'закрыт') + '</b>',
             e = data.elements.root.find('#port-label');
         setInnerHTML(e[0],text);
     },
@@ -104,7 +104,7 @@ function PrefsDialog(remote) {
     {
         var e = data.elements.blocklist_button;
         e.attr('disabled',!b);
-        e.val(b ? 'Update' : 'Updating...');
+        e.val(b ? 'Применить' : 'Применение...');
     },
 
     getValue = function(e)

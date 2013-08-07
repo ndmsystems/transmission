@@ -194,7 +194,7 @@ Prefs._Defaults =
 Prefs.setValue = function(key, val)
 {
 	if (!(key in Prefs._Defaults))
-		console.warn("unrecognized preference key '%s'", key);
+		console.warn("неизвестный параметр '%s'", key);
 
 	var date = new Date();
 	date.setFullYear (date.getFullYear() + 1);
@@ -212,7 +212,7 @@ Prefs.getValue = function(key, fallback)
 	var val;
 
 	if (!(key in Prefs._Defaults))
-		console.warn("unrecognized preference key '%s'", key);
+		console.warn("неизвестный параметр '%s'", key);
 
 	var lines = document.cookie.split(';');
 	for (var i=0, len=lines.length; !val && i<len; ++i) {
