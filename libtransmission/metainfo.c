@@ -374,7 +374,10 @@ geturllist (tr_info * inf, tr_variant * meta)
   if (tr_variantDictFindList (meta, TR_KEY_url_list, &urls))
     {
       int i;
-      const int n = tr_variantListSize (urls);
+      int n = tr_variantListSize (urls);
+
+      if (n > 4)
+        n = 4;
 
       inf->webseedCount = 0;
       inf->webseeds = tr_new0 (char*, n);
