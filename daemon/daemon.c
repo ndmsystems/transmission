@@ -37,7 +37,7 @@
 
 #include "watch.h"
 
-#define MY_NAME "transmission-daemon"
+#define MY_NAME "transmissiond"
 
 #define MEM_K 1024
 #define MEM_K_STR "KiB"
@@ -299,16 +299,16 @@ onFileAdded (tr_session * session, const char * dir, const char * file)
 }
 
 static void
-printMessage (FILE * logfile, int level, const char * name, const char * message, const char * file, int line)
+printMessage (FILE * logfile, int level, const char * name, const char * message, const char * file UNUSED, int line UNUSED)
 {
     if (logfile != NULL)
     {
         char timestr[64];
         tr_logGetTimeStr (timestr, sizeof (timestr));
         if (name)
-            fprintf (logfile, "[%s] %s %s (%s:%d)\n", timestr, name, message, file, line);
+            fprintf (logfile, "[%s] %s %s\n", timestr, name, message);
         else
-            fprintf (logfile, "[%s] %s (%s:%d)\n", timestr, message, file, line);
+            fprintf (logfile, "[%s] %s\n", timestr, message);
     }
 #ifdef HAVE_SYSLOG
     else /* daemon... write to syslog */
@@ -323,9 +323,9 @@ printMessage (FILE * logfile, int level, const char * name, const char * message
         }
 
         if (name)
-            syslog (priority, "%s %s (%s:%d)", name, message, file, line);
+            syslog (priority, "%s %s", name, message);
         else
-            syslog (priority, "%s (%s:%d)", message, file, line);
+            syslog (priority, "%s", message);
     }
 #endif
 }
