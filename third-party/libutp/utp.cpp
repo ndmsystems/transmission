@@ -1692,10 +1692,10 @@ void UTPSocket::apply_ledbat_ccontrol(size_t bytes_acked, uint32 actual_delay, i
 		scaled_gain = 0;
 	}
 
-	if (scaled_gain + max_window < MIN_WINDOW_SIZE) {
+	if (((size_t)scaled_gain + max_window) < MIN_WINDOW_SIZE) {
 		max_window = MIN_WINDOW_SIZE;
 	} else {
-		max_window = (size_t)(max_window + scaled_gain);
+		max_window = max_window + (size_t)scaled_gain;
 	}
 
 	// make sure that the congestion window is below max
