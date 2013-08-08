@@ -1269,7 +1269,7 @@ tr_variantFromBuf (tr_variant      * setme,
                    const char      * optional_source,
                    const char     ** setme_end)
 {
-  int err;
+  int err = -1;
   char lc_numeric[128];
 
   /* parse with LC_NUMERIC="C" to ensure a "." decimal separator */
