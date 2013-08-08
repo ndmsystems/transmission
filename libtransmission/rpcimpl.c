@@ -1573,9 +1573,9 @@ addTorrentImpl (struct tr_rpc_idle_data * data, tr_ctor * ctor)
 {
   int err;
   int duplicate_id;
-  const char * result;
+  const char * result = NULL;
   tr_torrent * tor;
-  tr_quark key;
+  tr_quark key = 0;
 
   err = 0;
   duplicate_id = 0;
