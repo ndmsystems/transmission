@@ -44,6 +44,7 @@
 
 #ifdef HAVE_NDM /* { */
 # include <ndm/core.h>
+# include <ndm/dlist.h>
 
 #ifndef  __TARGET_REALM__
 # define __TARGET_REALM__			"Undefined realm"
@@ -601,38 +602,58 @@ ndm_login (struct tr_rpc_server * server,
            const char           * login,
            const char           * password)
 {
-  bool authenticated = false;
+  bool                authenticated = false;
+  tr_session        * s = server->session;
+  struct ndm_user_t * u = NULL;
 
-  if (login[0] != '\0' && password[0] != '\0' &&
-      server->username != NULL && strcmp(server->username, login) == 0 &&
-      server->password != NULL && strcmp(server->password, password) == 0)
+  tr_lockLock (s->lock);
+
+  ndm_dlist_foreach_entry (u, struct ndm_user_t, entry, &s->cached_accounts)
+  {
+    if (strcmp (u->name, login) == 0
+        && strcmp (u->password, password) == 0)
     {
       authenticated = true;
+      break;
     }
-  else
-    {
-      struct ndm_core_t * core = ndm_core_open("transmission/ci", 1000, NDM_CORE_DEFAULT_CACHE_MAX_SIZE);
+  }
 
-      if (core != NULL)
+  if (!authenticated)
+    {
+      struct ndm_core_t * core = ndm_core_open ("transmission/ci", 1000, NDM_CORE_DEFAULT_CACHE_MAX_SIZE);
+
+      if (core != NULL
+          && ndm_core_authenticate (core, login, password, __TARGET_REALM__, "torrent", &authenticated)
+          && authenticated)
         {
-          if (ndm_core_authenticate(core, login, password, __TARGET_REALM__, "torrent", &authenticated))
+          u = tr_malloc (sizeof (*u));
+
+          if (u != NULL)
             {
-              if (authenticated)
+              u->name = NULL;
+              u->password = NULL;
+              ndm_dlist_init (&u->entry);
+
+              if ((u->name = tr_strdup (login)) == NULL
+                  || (u->password = tr_strdup (password)) == NULL)
                 {
-                  tr_rpcSetUsername(server, login);
-                  tr_rpcSetPassword(server, password);
+                  tr_free (u->name);
+                  tr_free (u->password);
+                  tr_free (u);
                 }
-              else
+                else
                 {
-                  tr_free(server->username);
-                  server->username = NULL;
-                  tr_free(server->password);
-                  server->password = NULL;
+                  ndm_dlist_insert_after (&s->cached_accounts, &u->entry);
+                  authenticated = true;
                 }
             }
-          ndm_core_close(&core);
         }
+
+      ndm_core_close (&core);
     }
+
+  tr_lockUnlock (s->lock);
+
   return authenticated;
 }
 #endif // } HAVE_NDM
