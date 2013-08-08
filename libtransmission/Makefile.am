@@ -147,7 +147,7 @@ TESTS = \
   utils-test \
   variant-test
 
-noinst_PROGRAMS = $(TESTS)
+noinst_PROGRAMS =
 
 apps_ldflags = \
   @ZLIB_LDFLAGS@
@@ -164,73 +164,3 @@ apps_ldadd = \
   @OPENSSL_LIBS@ \
   @PTHREAD_LIBS@ \
   @ZLIB_LIBS@
-
-TEST_SOURCES = libtransmission-test.c
-
-bitfield_test_SOURCES = bitfield-test.c $(TEST_SOURCES)
-bitfield_test_LDADD = ${apps_ldadd}
-bitfield_test_LDFLAGS = ${apps_ldflags}
-
-blocklist_test_SOURCES = blocklist-test.c $(TEST_SOURCES)
-blocklist_test_LDADD = ${apps_ldadd}
-blocklist_test_LDFLAGS = ${apps_ldflags}
-
-clients_test_SOURCES = clients-test.c $(TEST_SOURCES)
-clients_test_LDADD = ${apps_ldadd}
-clients_test_LDFLAGS = ${apps_ldflags}
-
-crypto_test_SOURCES = crypto-test.c $(TEST_SOURCES)
-crypto_test_LDADD = ${apps_ldadd}
-crypto_test_LDFLAGS = ${apps_ldflags}
-
-history_test_SOURCES = history-test.c $(TEST_SOURCES)
-history_test_LDADD = ${apps_ldadd}
-history_test_LDFLAGS = ${apps_ldflags}
-
-json_test_SOURCES = json-test.c $(TEST_SOURCES)
-json_test_LDADD = ${apps_ldadd}
-json_test_LDFLAGS = ${apps_ldflags}
-
-quark_test_SOURCES = quark-test.c $(TEST_SOURCES)
-quark_test_LDADD = ${apps_ldadd}
-quark_test_LDFLAGS = ${apps_ldflags}
-
-magnet_test_SOURCES = magnet-test.c $(TEST_SOURCES)
-magnet_test_LDADD = ${apps_ldadd}
-magnet_test_LDFLAGS = ${apps_ldflags}
-
-metainfo_test_SOURCES = metainfo-test.c $(TEST_SOURCES)
-metainfo_test_LDADD = ${apps_ldadd}
-metainfo_test_LDFLAGS = ${apps_ldflags}
-
-move_test_SOURCES = move-test.c $(TEST_SOURCES)
-move_test_LDADD = ${apps_ldadd}
-move_test_LDFLAGS = ${apps_ldflags}
-
-peer_msgs_test_SOURCES = peer-msgs-test.c $(TEST_SOURCES)
-peer_msgs_test_LDADD = ${apps_ldadd}
-peer_msgs_test_LDFLAGS = ${apps_ldflags}
-
-rpc_test_SOURCES = rpc-test.c $(TEST_SOURCES)
-rpc_test_LDADD = ${apps_ldadd}
-rpc_test_LDFLAGS = ${apps_ldflags}
-
-session_test_SOURCES = session-test.c $(TEST_SOURCES)
-session_test_LDADD = ${apps_ldadd}
-session_test_LDFLAGS = ${apps_ldflags}
-
-tr_getopt_test_SOURCES = tr-getopt-test.c $(TEST_SOURCES)
-tr_getopt_test_LDADD = ${apps_ldadd}
-tr_getopt_test_LDFLAGS = ${apps_ldflags}
-
-utils_test_SOURCES = utils-test.c $(TEST_SOURCES)
-utils_test_LDADD = ${apps_ldadd}
-utils_test_LDFLAGS = ${apps_ldflags}
-
-variant_test_SOURCES = variant-test.c $(TEST_SOURCES)
-variant_test_LDADD = ${apps_ldadd}
-variant_test_LDFLAGS = ${apps_ldflags}
-
-rename_test_SOURCES = rename-test.c $(TEST_SOURCES)
-rename_test_LDADD = ${apps_ldadd}
-rename_test_LDFLAGS = ${apps_ldflags}
