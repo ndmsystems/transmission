@@ -131,6 +131,12 @@ piperead (int s, char *buf, int len)
 #include "trevent.h"
 #include "utils.h"
 
+inline static int
+ignore_result (int res)
+{
+    return res;
+}
+
 /***
 ****
 ***/
@@ -265,7 +271,7 @@ tr_eventInit (tr_session * session)
 
     eh = tr_new0 (tr_event_handle, 1);
     eh->lock = tr_lockNew ();
-    pipe (eh->fds);
+    ignore_result (pipe (eh->fds));
     eh->session = session;
     eh->thread = tr_threadNew (libeventThreadFunc, eh);
 
@@ -320,10 +326,10 @@ tr_runInEventThread (tr_session * session,
         struct tr_run_data data;
 
         tr_lockLock (lock);
-        pipewrite (fd, &ch, 1);
+        ignore_result (pipewrite (fd, &ch, 1));
         data.func = func;
         data.user_data = user_data;
-        pipewrite (fd, &data, sizeof (data));
+        ignore_result (pipewrite (fd, &data, sizeof (data)));
         tr_lockUnlock (lock);
     }
 }
