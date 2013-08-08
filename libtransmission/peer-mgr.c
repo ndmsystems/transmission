@@ -1954,7 +1954,6 @@ myHandshakeDoneCB (tr_handshake  * handshake,
   const tr_address * addr;
   tr_peerMgr * manager = vmanager;
   tr_swarm  * s;
-  tr_handshake * ours;
 
   assert (io);
   assert (tr_isBool (ok));
@@ -1964,16 +1963,11 @@ myHandshakeDoneCB (tr_handshake  * handshake,
     : NULL;
 
   if (tr_peerIoIsIncoming (io))
-    ours = tr_ptrArrayRemoveSorted (&manager->incomingHandshakes,
-                                    handshake, handshakeCompare);
+    tr_ptrArrayRemoveSorted (&manager->incomingHandshakes,
+                             handshake, handshakeCompare);
   else if (s)
-    ours = tr_ptrArrayRemoveSorted (&s->outgoingHandshakes,
-                                    handshake, handshakeCompare);
-  else
-    ours = handshake;
-
-  assert (ours);
-  assert (ours == handshake);
+    tr_ptrArrayRemoveSorted (&s->outgoingHandshakes,
+                             handshake, handshakeCompare);
 
   if (s)
     swarmLock (s);
