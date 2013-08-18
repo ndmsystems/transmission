@@ -40,10 +40,19 @@
 
 #ifdef HAVE_NDM /* { */
 # include <ndm/core.h>
+# include <ndm/dlist.h>
 
 #ifndef  __TARGET_REALM__
-# define __TARGET_REALM__			"Undefined realm"
+# define __TARGET_REALM__           "Undefined realm"
 #endif
+
+# define NDM_LOCAL_AUTH_TIMEOUT_    500
+
+# define NDM_CORE_CACHE_MAX_SIZE_   4096
+
+/* Should be synchronized with NDM constants. */
+# define NDM_LOCAL_USERNAME_SIZE_   32
+# define NDM_LOCAL_PASSWORD_SIZE_   32
 
 #else /* } HAVE_NDM { */
 
@@ -82,6 +91,10 @@ struct tr_rpc_server
     bool               isStreamInitialized;
     z_stream           stream;
 #endif
+
+#ifdef HAVE_NDM /* { */
+    struct ndm_core_t * core;
+#endif /* } HAVE_NDM */
 };
 
 #define dbgmsg(...) \
@@ -591,47 +604,95 @@ handle_rpc (struct evhttp_request * req, struct tr_rpc_server  * server)
     }
 }
 
-#ifdef HAVE_NDM // {
+#ifdef HAVE_NDM /* { */
 static bool
 ndm_login (struct tr_rpc_server * server,
-           const char           * login,
+           const bool             is_local,
+           const char           * username,
            const char           * password)
 {
-  bool authenticated = false;
+  bool                authenticated = false;
+  tr_session        * s = server->session;
+  struct ndm_user_t * u = NULL;
 
-  if (login[0] != '\0' && password[0] != '\0' &&
-      server->username != NULL && strcmp(server->username, login) == 0 &&
-      server->password != NULL && strcmp(server->password, password) == 0)
+  tr_lockLock (s->lock);
+
+  ndm_dlist_foreach_entry (u, struct ndm_user_t, entry, &s->cached_accounts)
+  {
+    if (strcmp (u->name, username) == 0
+        && strcmp (u->password, password) == 0)
     {
       authenticated = true;
+	  break;
     }
-  else
-    {
-      struct ndm_core_t * core = ndm_core_open("transmission/ci", 1000, NDM_CORE_DEFAULT_CACHE_MAX_SIZE);
+  }
 
-      if (core != NULL)
+  if (!authenticated
+      && server->core != NULL)
+    {
+      /* Try to authenticate using a local torrent account. */
+      char local_username[NDM_LOCAL_USERNAME_SIZE_ + 1];
+      char local_password[NDM_LOCAL_PASSWORD_SIZE_ + 1];
+
+      /* Clear all cache to get a new username and password. */
+      ndm_core_cache_clear (server->core, true);
+
+      if (is_local
+          && ndm_core_request_first_str_buffer_cf (
+            server->core,
+            NDM_CORE_REQUEST_PARSE,
+            NDM_CORE_MODE_CACHE,
+            local_username, sizeof(local_username), NULL,
+            "local-account/username", NULL,
+            "show torrent local-account") == NDM_CORE_RESPONSE_ERROR_OK
+          && local_username[0] != 0
+          && ndm_core_request_first_str_buffer_cf (
+            server->core,
+            NDM_CORE_REQUEST_PARSE,
+            NDM_CORE_MODE_CACHE,
+            local_password, sizeof(local_password), NULL,
+            "local-account/password", NULL,
+            "show torrent local-account") == NDM_CORE_RESPONSE_ERROR_OK
+          && local_password[0] != 0
+          && strcmp (username, local_username) == 0
+          && strcmp (password, local_password) == 0)
         {
-          if (ndm_core_authenticate(core, login, password, __TARGET_REALM__, "torrent", &authenticated))
-            {
-              if (authenticated)
+          /* Locally authenticated, do not cache an account data. */
+          authenticated = true;
+        }
+      else if (ndm_core_authenticate (server->core, username, password,
+                 __TARGET_REALM__, "torrent", &authenticated)
+               && authenticated)
+        {
+          u = tr_malloc (sizeof (*u));
+
+          if (u != NULL)
+		    {
+              u->name = NULL;
+              u->password = NULL;
+              ndm_dlist_init (&u->entry);
+
+              if ((u->name = tr_strdup (username)) == NULL
+                  || (u->password = tr_strdup (password)) == NULL)
                 {
-                  tr_rpcSetUsername(server, login);
-                  tr_rpcSetPassword(server, password);
+                  tr_free (u->name);
+                  tr_free (u->password);
+                  tr_free (u);
                 }
               else
                 {
-                  tr_free(server->username);
-                  server->username = NULL;
-                  tr_free(server->password);
-                  server->password = NULL;
+                  ndm_dlist_insert_after (&s->cached_accounts, &u->entry);
+                  authenticated = true;
                 }
             }
-          ndm_core_close(&core);
         }
     }
+
+  tr_lockUnlock (s->lock);
+
   return authenticated;
 }
-#endif // } HAVE_NDM
+#endif /* } HAVE_NDM */
 
 static bool
 isAddressAllowed (const tr_rpc_server * server, const char * address)
@@ -667,8 +728,12 @@ handle_request (struct evhttp_request * req, void * arg)
   if (req && req->evcon)
     {
       const char * auth;
-      char * user = NULL;
-      char * pass = NULL;
+      char       * user = NULL;
+      char       * pass = NULL;
+#ifdef HAVE_NDM /* { */
+      const bool  is_local = strcmp (req->remote_host, "127.0.0.1") == 0 ||
+                             strcmp (req->remote_host, "::1") == 0;
+#endif /* } HAVE_NDM */
 
       evhttp_add_header (req->output_headers, "Server", MY_REALM);
 
@@ -693,13 +758,13 @@ handle_request (struct evhttp_request * req, void * arg)
             "<p>If you're still using ACLs, use a whitelist instead. See the transmission-daemon manpage for details.</p>");
         }
       else if (server->isPasswordEnabled
-#ifdef HAVE_NDM // {
-                 && (!pass || !user || !ndm_login(server, user, pass)))
-#else  // } HAVE_NDM {
+#ifdef HAVE_NDM /* { */
+                 && (!pass || !user || !ndm_login(server, is_local, user, pass)))
+#else  /* } HAVE_NDM { */
                  && (!pass || !user || strcmp (server->username, user)
                                     || !tr_ssha1_matches (server->password,
                                                           pass)))
-#endif // } HAVE_NDM
+#endif /* } HAVE_NDM */
         {
           evhttp_add_header (req->output_headers,
                              "WWW-Authenticate",
@@ -769,6 +834,11 @@ startServer (void * vserver)
       evhttp_bind_socket (server->httpd, tr_address_to_string (&addr), server->port);
       evhttp_set_gencb (server->httpd, handle_request, server);
     }
+
+  server->core = ndm_core_open (
+    "transmission/ci",
+    NDM_LOCAL_AUTH_TIMEOUT_,
+    NDM_CORE_CACHE_MAX_SIZE_);
 }
 
 static void
@@ -779,6 +849,8 @@ stopServer (tr_rpc_server * server)
       evhttp_free (server->httpd);
       server->httpd = NULL;
     }
+
+  ndm_core_close (&server->core);
 }
 
 static void
