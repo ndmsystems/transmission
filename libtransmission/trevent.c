@@ -210,6 +210,7 @@ readFromPipe (evutil_socket_t   fd,
         {
             dbgmsg ("pipe eof reached... removing event listener");
             event_free (eh->pipeEvent);
+            event_base_loopbreak (eh->base);
             break;
         }
 
@@ -308,6 +309,8 @@ libeventThreadFunc (void * veh)
     /* loop until all the events are done */
     while (!eh->die)
         event_base_dispatch (base);
+
+    event_free (eh->ndmEvent);
 
     /* shut down the thread */
     tr_lockFree (eh->lock);
