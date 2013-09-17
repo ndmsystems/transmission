@@ -41,6 +41,11 @@
 #   permitted in any medium without royalty provided the copyright notice
 #   and this notice are preserved.
 
+AC_DEFUN([CHECK_SSL_OK],
+[
+    OPENSSL_LIBS=`echo $OPENSSL_LIBS | sed -e 's/-lssl//'`
+])dnl
+
 AC_DEFUN([CHECK_SSL],
 [
     AC_MSG_CHECKING([for OpenSSL])
@@ -62,7 +67,7 @@ AC_DEFUN([CHECK_SSL],
         AC_MSG_ERROR([Cannot locate ssl])
     else
         AC_MSG_RESULT([$ssldir])
-        OPENSSL_LIBS="-L$ssldir/lib -lssl -lcrypto";
+        OPENSSL_LIBS="-L$ssldir/lib -lcrypto";
     fi
 ])dnl
 
