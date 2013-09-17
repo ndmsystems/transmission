@@ -33,6 +33,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/ioctl.h>
 #include <sys/time.h> /* getrlimit */
 #include <sys/resource.h> /* getrlimit */
 #include <fcntl.h> /* O_LARGEFILE posix_fadvise */

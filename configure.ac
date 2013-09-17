@@ -110,7 +110,7 @@ AC_SEARCH_LIBS([socket], [socket net])
 AC_SEARCH_LIBS([gethostbyname], [nsl bind])
 AC_SEARCH_LIBS([quotacursor_skipidtype], [quota])
 AC_SEARCH_LIBS([ndm_core_authenticate], ndm, AC_DEFINE([HAVE_NDM], 1))
-PKG_CHECK_MODULES(OPENSSL, [openssl >= $OPENSSL_MINIMUM], , [CHECK_SSL()])
+PKG_CHECK_MODULES(OPENSSL, [openssl >= $OPENSSL_MINIMUM], [CHECK_SSL_OK()], [CHECK_SSL()])
 PKG_CHECK_MODULES(LIBCURL, [libcurl >= $CURL_MINIMUM])
 PKG_CHECK_MODULES(LIBEVENT, [libevent >= $LIBEVENT_MINIMUM])
 AC_PATH_ZLIB
