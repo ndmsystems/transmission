@@ -146,7 +146,11 @@ const char* tr_getDefaultConfigDir (const char * appname);
 const char* tr_getDefaultDownloadDir (void);
 
 /* NDM internal limits */
+#ifdef __RT305X__
+#define TR_MAX_SPEED_KB                     (1024*1)
+#else
 #define TR_MAX_SPEED_KB                     (1024*5)
+#endif
 #define TR_MAX_PEERS_COUNT                       300
 /* NDM internal limits end */
 
