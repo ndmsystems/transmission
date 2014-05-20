@@ -105,7 +105,7 @@ struct ip_mreqn
 #define SERVICEPREFIX "u"
 #define SERVICEPREFIX2 'u'
 
-char * simpleUPnPcommand2(int s, const char * url, const char * service,
+static char * simpleUPnPcommand2(int s, const char * url, const char * service,
 		       const char * action, struct UPNParg * args,
 		       int * bufsize, const char * httpversion);
 
@@ -132,7 +132,7 @@ LIBSPEC void parserootdesc(const char * buffer, int bufsize, struct IGDdatas * d
  * return values :
  *   pointer - OK
  *   NULL - error */
-static char * simpleUPnPcommand2(int s, const char * url, const char * service,
+char * simpleUPnPcommand2(int s, const char * url, const char * service,
                                  const char * action, struct UPNParg * args,
                                  int * bufsize, const char * httpversion)
 {
