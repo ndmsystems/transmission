@@ -102,6 +102,9 @@ receivedata(int socket,
 		if(scope_id)
 			*scope_id = src_addr6->sin6_scope_id;
 	}
+#else
+	if(scope_id)
+		*scope_id = 0;
 #endif
 	return n;
 }
