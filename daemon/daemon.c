@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <stdio.h> /* printf */
 #include <stdlib.h> /* exit, atoi */
+#include <string.h> /* strcmp */
 
 #include <fcntl.h> /* open */
 #include <signal.h>
@@ -394,6 +395,7 @@ main (int argc, char ** argv)
     bool pidfile_created = false;
     tr_session * session = NULL;
     struct event *status_ev;
+    const char * downloadDir = NULL;
 
     key_pidfile = tr_quark_new ("pidfile",  7);
 
@@ -459,7 +461,13 @@ main (int argc, char ** argv)
                       break;
             case 'v': tr_variantDictAddStr (&settings, TR_KEY_rpc_password, optarg);
                       break;
-            case 'w': tr_variantDictAddStr (&settings, TR_KEY_download_dir, optarg);
+            case 'w': if (!tr_variantDictFindStr (&settings, TR_KEY_download_dir, &downloadDir, NULL)
+                          || downloadDir == NULL
+                          || downloadDir[0] == '\0'
+                          || strcmp(downloadDir, tr_getDefaultDownloadDir ()) == 0)
+                        {
+                          tr_variantDictAddStr (&settings, TR_KEY_download_dir, optarg);
+                        }
                       break;
             case 'P': tr_variantDictAddInt (&settings, TR_KEY_peer_port, atoi (optarg));
                       break;
