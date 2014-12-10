@@ -21,24 +21,24 @@ Transmission.fmt = (function()
 {
 	var speed_K = 1000;
 	var speed_B_str =  'Б/с';
-	var speed_K_str = 'Кб/с';
-	var speed_M_str = 'Мб/с';
-	var speed_G_str = 'Гб/с';
-	var speed_T_str = 'Тб/с';
+	var speed_K_str = 'КБ/с';
+	var speed_M_str = 'МБ/с';
+	var speed_G_str = 'ГБ/с';
+	var speed_T_str = 'ТБ/с';
 
 	var size_K = 1000;
 	var size_B_str =  'Б';
-	var size_K_str = 'Кб';
-	var size_M_str = 'Мб';
-	var size_G_str = 'Гб';
-	var size_T_str = 'Тб';
+	var size_K_str = 'КБ';
+	var size_M_str = 'МБ';
+	var size_G_str = 'ГБ';
+	var size_T_str = 'ТБ';
 
 	var mem_K = 1024;
 	var mem_B_str =   'Б';
-	var mem_K_str = 'Кб';
-	var mem_M_str = 'Мб';
-	var mem_G_str = 'Гб';
-	var mem_T_str = 'Тб';
+	var mem_K_str = 'КиБ';
+	var mem_M_str = 'МиБ';
+	var mem_G_str = 'ГиБ';
+	var mem_T_str = 'ТиБ';
 
 	return {
 
