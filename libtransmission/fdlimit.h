@@ -11,6 +11,7 @@
  #error only libtransmission should #include this header.
 #endif
 
+#include <sys/types.h>
 #include "transmission.h"
 #include "net.h"
 

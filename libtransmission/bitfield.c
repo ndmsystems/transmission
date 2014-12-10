@@ -10,6 +10,7 @@
 #include <assert.h>
 #include <stdlib.h> /* realloc () */
 #include <string.h> /* memset */
+#include <sys/types.h>
 
 #include "transmission.h"
 #include "bitfield.h"
