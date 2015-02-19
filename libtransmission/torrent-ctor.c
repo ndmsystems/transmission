@@ -486,3 +486,11 @@ tr_ctorFree (tr_ctor * ctor)
     tr_free (ctor->normal);
     tr_free (ctor);
 }
+
+void
+tr_ctorSetSeedMode (tr_session * session, bool Mode)
+{
+    assert (tr_isBool (Mode));
+
+    session->SeedMode = Mode;
+}

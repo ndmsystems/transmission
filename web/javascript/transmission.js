@@ -921,6 +921,7 @@ Transmission.prototype =
 		    fileInput   = $('input#torrent_upload_file'),
 		    folderInput = $('input#add-dialog-folder-input'),
 		    startInput  = $('input#torrent_auto_start'),
+		    seedInput   = $('input#torrent_seed_mode'),
 		    urlInput    = $('input#torrent_upload_url');
 
 		if (!confirmed)
@@ -928,6 +929,7 @@ Transmission.prototype =
 			// update the upload dialog's fields
 			fileInput.attr('value', '');
 			urlInput.attr('value', '');
+			seedInput.prop('checked', false);
 			startInput.attr('checked', this.shouldAddedTorrentsStart());
 			folderInput.attr('value', $("#download-dir").val());
 			folderInput.change($.proxy(this.updateFreeSpaceInAddDialog,this));
@@ -941,6 +943,7 @@ Transmission.prototype =
 		{
 			var paused = !startInput.is(':checked'),
 			    destination = folderInput.val(),
+			    seed_mode = seedInput.is(':checked'),
 			    remote = this.remote;
 
 			jQuery.each (fileInput[0].files, function(i,file) {
@@ -956,7 +959,8 @@ Transmission.prototype =
 							arguments: {
 								'paused': paused,
 								'download-dir': destination,
-								'metainfo': metainfo
+								'metainfo': metainfo,
+								'seed-mode': seed_mode
 							}
 						};
 						remote.sendRequest (o, function(response) {
@@ -977,7 +981,8 @@ Transmission.prototype =
 					arguments: {
 						'paused': paused,
 						'download-dir': destination,
-						'filename': url
+						'filename': url,
+						'seed-mode': seed_mode
 					}
 				};
 				remote.sendRequest (o, function(response) {
@@ -985,6 +990,7 @@ Transmission.prototype =
 						alert ('Ошибка при добавлении "' + url + '": ' + response.result);
 				});
 			}
+			seedInput.prop('checked', false);
 		}
 	},
 

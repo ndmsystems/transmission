@@ -306,6 +306,7 @@ static const struct tr_key_struct my_static[] =
   { "secondsActive", 13 },
   { "secondsDownloading", 18 },
   { "secondsSeeding", 14 },
+  { "seed-mode", 9 },
   { "seed-queue-enabled", 18 },
   { "seed-queue-size", 15 },
   { "seedIdleLimit", 13 },
