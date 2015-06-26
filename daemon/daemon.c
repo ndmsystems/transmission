@@ -69,6 +69,7 @@ static FILE *logfile = NULL;
 static tr_session * mySession = NULL;
 static tr_quark key_pidfile = 0;
 static struct event_base *ev_base = NULL;
+static struct event *save_ev = NULL;
 
 /***
 ****  Config File
@@ -368,6 +369,20 @@ periodicUpdate (evutil_socket_t fd UNUSED, short what UNUSED, void *watchdir)
     reportStatus ();
 }
 
+static void
+deferredSave (evutil_socket_t fd UNUSED, short what UNUSED, void *session)
+{
+    if (session) {
+        tr_variant sessionSettings;
+        const char * configDir = tr_sessionGetConfigDir (session);
+
+        tr_variantInitDict (&sessionSettings, 0);
+        tr_sessionGetSettings (session, &sessionSettings);
+        tr_sessionSaveSettings (session, configDir, &sessionSettings);
+        tr_variantFree (&sessionSettings);
+    }
+}
+
 static tr_rpc_callback_status
 on_rpc_callback (tr_session            * session UNUSED,
                  tr_rpc_callback_type    type,
@@ -376,6 +391,17 @@ on_rpc_callback (tr_session            * session UNUSED,
 {
     if (type == TR_RPC_SESSION_CLOSE)
         event_base_loopexit(ev_base, NULL);
+
+    if (type == TR_RPC_SESSION_CHANGED && save_ev) {
+        struct timeval one_sec = { 1, 0 };
+
+        if (event_add(save_ev, &one_sec) == -1)
+        {
+            /* try to make an immediate call */
+            deferredSave (-1, EV_TIMEOUT, session);
+        }
+    }
+
     return TR_RPC_OK;
 }
 
@@ -637,6 +663,16 @@ main (int argc, char ** argv)
         }
     }
 
+    /* Create event for deferred settings saving */
+    {
+        save_ev = event_new(ev_base, -1, EV_TIMEOUT, &deferredSave, session);
+        if (save_ev == NULL)
+        {
+            tr_logAddError("Failed to create a deferred save settings event %s", tr_strerror(errno));
+            goto cleanup;
+        }
+    }
+
     sd_notify( 0, "READY=1\n" );
 
     /* Run daemon event loop */
@@ -649,6 +685,12 @@ main (int argc, char ** argv)
 cleanup:
     sd_notify( 0, "STATUS=Closing transmission session...\n" );
     printf ("Closing transmission session...");
+
+    if (save_ev)
+    {
+        event_del(save_ev);
+        event_free(save_ev);
+    }
 
     if (status_ev)
     {
