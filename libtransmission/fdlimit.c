@@ -140,40 +140,16 @@ preallocate_file_full (const char * filename, uint64_t length)
   int fd = open (filename, flags, 0666);
   if (fd >= 0)
     {
+      if (!success)
+        success = tuxera_fallocate (fd, length);
 # ifdef HAVE_FALLOCATE64
       if (!success)
         success = !fallocate64 (fd, 0, 0, length);
 # endif
-# ifdef HAVE_XFS_XFS_H
-      if (!success && platform_test_xfs_fd (fd))
-        {
-          xfs_flock64_t fl;
-          fl.l_whence = 0;
-          fl.l_start = 0;
-          fl.l_len = length;
-          success = !xfsctl (NULL, fd, XFS_IOC_RESVSP64, &fl);
-        }
-# endif
-# ifdef SYS_DARWIN
-      if (!success)
-        {
-          fstore_t fst;
-          fst.fst_flags = F_ALLOCATECONTIG;
-          fst.fst_posmode = F_PEOFPOSMODE;
-          fst.fst_offset = 0;
-          fst.fst_length = length;
-          fst.fst_bytesalloc = 0;
-          success = !fcntl (fd, F_PREALLOCATE, &fst);
-        }
-# endif
-# if 0 /* HAVE_POSIX_FALLOCATE */
+# ifdef HAVE_POSIX_FALLOCATE
       if (!success)
         success = !posix_fallocate (fd, 0, length);
 # endif
-
-      if (!success)
-        success = tuxera_fallocate (fd, length);
-
       if (!success) /* fake allocate */
         success = !ftruncate (fd, length);
 
