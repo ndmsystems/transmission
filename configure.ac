@@ -378,7 +378,7 @@ dnl See if ANY version of miniupnpc is installed
 AC_LINK_IFELSE(
   [AC_LANG_PROGRAM([#include <miniupnpc/miniupnpc.h>],
                    [struct UPNPDev dev;])],
-  [upnp_version="unknown"],
+  [upnp_version="none"],
   [upnp_version="none"]
 )
 
