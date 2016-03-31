@@ -31,6 +31,17 @@
 #include "trevent.h"
 #include "utils.h"
 
+#ifdef HAVE_NDM
+#include <ndm/xml.h>
+#include <ndm/core.h>
+
+inline static int ignore_result(int res)
+{
+    return res;
+}
+
+#endif
+
 #ifdef _WIN32
 
 typedef SOCKET tr_pipe_end_t;
@@ -157,6 +168,9 @@ typedef struct tr_event_handle
     tr_thread* thread;
     struct event_base* base;
     struct event* pipeEvent;
+#ifdef HAVE_NDM
+    struct event* ndmEvent;
+#endif
 }
 tr_event_handle;
 
@@ -221,6 +235,46 @@ static void readFromPipe(evutil_socket_t fd, short eventType, void* veh)
     }
 }
 
+#ifdef HAVE_NDM
+static void readFromNdmCore(int fd UNUSED, short eventType UNUSED, void* veh)
+{
+    tr_event_handle* eh = veh;
+    tr_session* s = eh->session;
+    struct ndm_core_event_t* e = ndm_core_event_connection_get(eh->session->ndm_cconn);
+
+    if (e != NULL &&
+        strcmp(ndm_core_event_type(e), "Event::Type::User") == 0)
+    {
+        const struct ndm_xml_node_t* r = ndm_core_event_root(e);
+        const struct ndm_xml_node_t* name = ndm_xml_node_first_child(r, "name");
+
+        if (name != NULL)
+        {
+            struct ndm_user_t* u = NULL;
+            struct ndm_user_t* n = NULL;
+
+            tr_lockLock(s->lock);
+
+            /* remove all cached accounts for a given name */
+            ndm_dlist_foreach_entry_safe(u, struct ndm_user_t, entry, &s->cached_accounts, n)
+            {
+                if (strcmp(u->name, ndm_xml_node_value(name)) == 0)
+                {
+                    ndm_dlist_remove(&u->entry);
+                    tr_free(u->name);
+                    tr_free(u->password);
+                    tr_free(u);
+                }
+            }
+
+            tr_lockUnlock(s->lock);
+        }
+    }
+
+    ndm_core_event_free(&e);
+}
+#endif
+
 static void logFunc(int severity, char const* message)
 {
     if (severity >= _EVENT_LOG_ERR)
@@ -257,12 +311,21 @@ static void libeventThreadFunc(void* veh)
     event_add(eh->pipeEvent, NULL);
     event_set_log_callback(logFunc);
 
+#ifdef HAVE_NDM
+    eh->ndmEvent = event_new(base, ndm_core_event_connection_fd(
+        eh->session->ndm_cconn), EV_READ | EV_PERSIST, readFromNdmCore, veh);
+    event_add(eh->ndmEvent, NULL);
+#endif
+
     /* loop until all the events are done */
     while (!eh->die)
     {
         event_base_dispatch(base);
     }
 
+#ifdef HAVE_NDM
+    event_free(eh->ndmEvent);
+#endif
     /* shut down the thread */
     tr_lockFree(eh->lock);
     event_base_free(base);
@@ -276,6 +339,11 @@ void tr_eventInit(tr_session* session)
     tr_event_handle* eh;
 
     session->events = NULL;
+
+#ifdef HAVE_NDM
+    ndm_dlist_init(&session->cached_accounts);
+    session->ndm_cconn = ndm_core_event_connection_open(NDM_CORE_DEFAULT_TIMEOUT);
+#endif
 
     eh = tr_new0(tr_event_handle, 1);
     eh->lock = tr_lockNew();
@@ -297,7 +365,23 @@ void tr_eventInit(tr_session* session)
 
 void tr_eventClose(tr_session* session)
 {
+#ifdef HAVE_NDM
+    struct ndm_user_t* u;
+    struct ndm_user_t* n;
+#endif
     TR_ASSERT(tr_isSession(session));
+
+#ifdef HAVE_NDM
+    ignore_result(ndm_core_event_connection_close(&session->ndm_cconn));
+
+    ndm_dlist_foreach_entry_safe(u, struct ndm_user_t, entry, &session->cached_accounts, n)
+    {
+        ndm_dlist_remove(&u->entry);
+        tr_free(u->name);
+        tr_free(u->password);
+        tr_free(u);
+    }
+#endif
 
     if (session->events == NULL)
     {

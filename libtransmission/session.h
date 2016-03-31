@@ -20,6 +20,18 @@
 #include "utils.h"
 #include "variant.h"
 
+#ifdef HAVE_NDM /* { */
+#include <ndm/core.h>
+#include <ndm/dlist.h>
+
+struct ndm_user_t
+{
+    char* name;
+    char* password;
+    struct ndm_dlist_entry_t entry;
+};
+#endif /* } HAVE_NDM */
+
 typedef enum
 {
     TR_NET_OK,
@@ -222,6 +234,11 @@ struct tr_session
 
     struct tr_bindinfo* public_ipv4;
     struct tr_bindinfo* public_ipv6;
+
+#ifdef HAVE_NDM
+    struct ndm_dlist_entry_t cached_accounts;
+    struct ndm_core_event_connection_t* ndm_cconn;
+#endif
 };
 
 static inline tr_port tr_sessionGetPublicPeerPort(tr_session const* session)
