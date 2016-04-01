@@ -161,68 +161,68 @@ TorrentRendererFull.prototype =
 			peer_count = t.getPeersConnected();
 			webseed_count = t.getWebseedsSendingToUs();
 
-			if (webseed_count && peer_count)
-			{
-				// Downloading from 2 of 3 peer(s) and 2 webseed(s)
-				return [ 'Downloading from',
-				         t.getPeersSendingToUs(),
-				         'of',
-				         fmt.countString('peer','peers',peer_count),
-				         'and',
-				         fmt.countString('web seed','web seeds',webseed_count),
-				         '-',
-				         TorrentRendererHelper.formatDL(t),
+                        if (webseed_count && peer_count)
+                        {
+                                // Downloading from 2 of 3 peer(s) and 2 webseed(s)
+                                return [ 'Загрузка',
+                                         t.getPeersSendingToUs(),
+                                         'из',
+                                         fmt.countString('части','частей',peer_count),
+                                         'и',
+                                         fmt.countString('web seed','web seeds',webseed_count),
+                                         '-',
+                                         TorrentRendererHelper.formatDL(t),
 				         TorrentRendererHelper.formatUL(t) ].join(' ');
 			}
-			else if (webseed_count)
-			{
-				// Downloading from 2 webseed(s)
-				return [ 'Downloading from',
-				         fmt.countString('web seed','web seeds',webseed_count),
-				         '-',
-				         TorrentRendererHelper.formatDL(t),
+                        else if (webseed_count)
+                        {
+                                // Downloading from 2 webseed(s)
+                                return [ 'Downloading from',
+                                         fmt.countString('web seed','web seeds',webseed_count),
+                                         '-',
+                                         TorrentRendererHelper.formatDL(t),
 				         TorrentRendererHelper.formatUL(t) ].join(' ');
 			}
-			else
-			{
-				// Downloading from 2 of 3 peer(s)
-				return [ 'Downloading from',
-				         t.getPeersSendingToUs(),
-				         'of',
-				         fmt.countString('peer','peers',peer_count),
-				         '-',
-				         TorrentRendererHelper.formatDL(t),
-				         TorrentRendererHelper.formatUL(t) ].join(' ');
+                        else
+                        {
+                                // Downloading from 2 of 3 peer(s)
+                                return [ 'Загрузка',
+                                         t.getPeersSendingToUs(),
+                                         'из',
+                                         fmt.countString('части','частей',peer_count),
+                                         '-',
+                                         TorrentRendererHelper.formatDL(t),
+                                         TorrentRendererHelper.formatUL(t) ].join(' ');
 			}
-		}
+                }
 
-		if (t.isSeeding())
-			return [ 'Seeding to',
-			         t.getPeersGettingFromUs(),
-			         'of',
-			         fmt.countString ('peer','peers',t.getPeersConnected()),
-			         '-',
-			         TorrentRendererHelper.formatUL(t) ].join(' ');
+                if (t.isSeeding())
+                        return [ 'Раздача',
+                                 t.getPeersGettingFromUs(),
+                                 'из',
+                                 fmt.countString ('части','частей',t.getPeersConnected()),
+                                 '-',
+                                 TorrentRendererHelper.formatUL(t) ].join(' ');
 
-		if (t.isChecking())
-			return [ 'Verifying local data (',
-			         Transmission.fmt.percentString(100.0 * t.getRecheckProgress()),
-			         '% tested)' ].join('');
+                if (t.isChecking())
+                        return [ 'Локальная проверка данных (',
+                                 Transmission.fmt.percentString(100.0 * t.getRecheckProgress()),
+                                 '% проверено)' ].join('');
 
-		return t.getStateString();
-	},
+                return t.getStateString();
+        },
 
-	getProgressDetails: function(controller, t)
-	{
-		if (t.needsMetaData()) {
-			var MetaDataStatus = "retrieving";
-			if (t.isStopped())
-				MetaDataStatus = "needs";
-			var percent = 100 * t.getMetadataPercentComplete();
-			return [ "Magnetized transfer - " + MetaDataStatus + " metadata (",
-			         Transmission.fmt.percentString(percent),
-			         "%)" ].join('');
-		}
+        getProgressDetails: function(controller, t)
+        {
+                if (t.needsMetaData()) {
+                        var MetaDataStatus = "извлечение";
+                        if (t.isStopped())
+                                MetaDataStatus = "ожидание";
+                        var percent = 100 * t.getMetadataPercentComplete();
+                        return [ "Magnet-передача — " + MetaDataStatus + " метаданных (",
+                                 Transmission.fmt.percentString(percent),
+                                 "%)" ].join('');
+                }
 
 		var c,
 		    sizeWhenDone = t.getSizeWhenDone(),
@@ -231,36 +231,36 @@ TorrentRendererFull.prototype =
 
 		if (is_done) {
 			if (totalSize === sizeWhenDone) // seed: '698.05 MiB'
-				c = [ Transmission.fmt.size(totalSize) ];
-			else // partial seed: '127.21 MiB of 698.05 MiB (18.2%)'
-				c = [ Transmission.fmt.size(sizeWhenDone),
-				      ' of ',
-				      Transmission.fmt.size(t.getTotalSize()),
-				      ' (', t.getPercentDoneStr(), '%)' ];
-			// append UL stats: ', uploaded 8.59 GiB (Ratio: 12.3)'
-			c.push(', uploaded ',
-			       Transmission.fmt.size(t.getUploadedEver()),
-			       ' (Ratio ',
-			       Transmission.fmt.ratioString(t.getUploadRatio()),
-			       ')');
-		} else { // not done yet
-			c = [ Transmission.fmt.size(sizeWhenDone - t.getLeftUntilDone()),
-			      ' of ', Transmission.fmt.size(sizeWhenDone),
-			      ' (', t.getPercentDoneStr(), '%)' ];
-		}
+                                c = [ Transmission.fmt.size(totalSize) ];
+                        else // partial seed: '127.21 MiB of 698.05 MiB (18.2%)'
+                                c = [ Transmission.fmt.size(sizeWhenDone),
+                                      ' из ',
+                                      Transmission.fmt.size(t.getTotalSize()),
+                                      ' (', t.getPercentDoneStr(), '%)' ];
+                        // append UL stats: ', uploaded 8.59 GiB (Ratio: 12.3)'
+                        c.push(', роздано ',
+                                Transmission.fmt.size(t.getUploadedEver()),
+                                ' (Рейтинг ',
+                                Transmission.fmt.ratioString(t.getUploadRatio()),
+                                ')');
+                } else { // not done yet
+                        c = [ Transmission.fmt.size(sizeWhenDone - t.getLeftUntilDone()),
+                              ' из ', Transmission.fmt.size(sizeWhenDone),
+                              ' (', t.getPercentDoneStr(), '%)' ];
+                }
 
 		// maybe append eta
 		if (!t.isStopped() && (!is_done || t.seedRatioLimit(controller)>0)) {
-			c.push(' - ');
-			var eta = t.getETA();
-			if (eta < 0 || eta >= (999*60*60) /* arbitrary */)
-				c.push('remaining time unknown');
-			else
-				c.push(Transmission.fmt.timeInterval(t.getETA()),
-				       ' remaining');
-		}
+                        c.push(' - ');
+                        var eta = t.getETA();
+                        if (eta < 0 || eta >= (999*60*60) /* arbitrary */)
+                                c.push('оставшееся время неизвестно');
+                        else
+                                c.push(Transmission.fmt.timeInterval(t.getETA()),
+                                        ' осталось');
+                }
 
-		return c.join('');
+                return c.join('');
 	},
 
 	render: function(controller, t, root)
@@ -281,12 +281,12 @@ TorrentRendererFull.prototype =
 		e = root._progress_details_container;
 		setTextContent(e, this.getProgressDetails(controller, t));
 
-		// pause/resume button
-		var is_stopped = t.isStopped();
-		e = root._pause_resume_button_image;
-		e.alt = is_stopped ? 'Resume' : 'Pause';
-		e.className = is_stopped ? 'torrent_resume' : 'torrent_pause';
-	}
+                // pause/resume button
+                var is_stopped = t.isStopped();
+                e = root._pause_resume_button_image;
+                e.alt = is_stopped ? 'Продолжить' : 'Приостановить';
+                e.className = is_stopped ? 'torrent_resume' : 'torrent_pause';
+        }
 };
 
 /****
@@ -328,24 +328,24 @@ TorrentRendererCompact.prototype =
 		if ((c = t.getErrorMessage()))
 			return c;
 		if (t.isDownloading()) {
-			var have_dn = t.getDownloadSpeed() > 0,
-			    have_up = t.getUploadSpeed() > 0;
-			if (!have_up && !have_dn)
-				return 'Idle';
-			var s = '';
-			if (have_dn)
-				s += TorrentRendererHelper.formatDL(t);
+                        var have_dn = t.getDownloadSpeed() > 0,
+                            have_up = t.getUploadSpeed() > 0;
+                        if (!have_up && !have_dn)
+                                return 'Ожидание';
+                        var s = '';
+                        if (have_dn)
+                                s += TorrentRendererHelper.formatDL(t);
 			if (have_dn && have_up)
 				s += ' '
 			if (have_up)
 				s += TorrentRendererHelper.formatUL(t);
-			return s;
-		}
-		if (t.isSeeding())
-			return [ 'Ratio: ',
-			         Transmission.fmt.ratioString(t.getUploadRatio()),
-			         ', ',
-			         TorrentRendererHelper.formatUL(t) ].join('');
+                        return s;
+                }
+                if (t.isSeeding())
+                        return [ 'Рейтинг: ',
+                                 Transmission.fmt.ratioString(t.getUploadRatio()),
+                                 ', ',
+                                 TorrentRendererHelper.formatUL(t) ].join('');
 		return t.getStateString();
 	},
 
