@@ -42,7 +42,7 @@
 
 #include "daemon.h"
 
-#define MY_NAME "transmission-daemon"
+#define MY_NAME "transmissiond"
 
 #define MEM_K 1024
 #define MEM_K_STR "KiB"
@@ -243,18 +243,18 @@ onFileAdded (tr_watchdir_t   dir,
 }
 
 static void
-printMessage (tr_sys_file_t logfile, int level, const char * name, const char * message, const char * file, int line)
+printMessage (tr_sys_file_t logfile, int level, const char * name, const char * message, const char * file UNUSED, int line UNUSED)
 {
     if (logfile != TR_BAD_SYS_FILE)
     {
         char timestr[64];
         tr_logGetTimeStr (timestr, sizeof (timestr));
         if (name)
-            tr_sys_file_write_fmt (logfile, "[%s] %s %s (%s:%d)" TR_NATIVE_EOL_STR,
-                                   NULL, timestr, name, message, file, line);
+            tr_sys_file_write_fmt (logfile, "[%s] %s %s" TR_NATIVE_EOL_STR,
+                                   NULL, timestr, name, message);
         else
-            tr_sys_file_write_fmt (logfile, "[%s] %s (%s:%d)" TR_NATIVE_EOL_STR,
-                                   NULL, timestr, message, file, line);
+            tr_sys_file_write_fmt (logfile, "[%s] %s" TR_NATIVE_EOL_STR,
+                                   NULL, timestr, message);
     }
 #ifdef HAVE_SYSLOG
     else /* daemon... write to syslog */
@@ -269,9 +269,9 @@ printMessage (tr_sys_file_t logfile, int level, const char * name, const char * 
         }
 
         if (name)
-            syslog (priority, "%s %s (%s:%d)", name, message, file, line);
+            syslog (priority, "%s %s", name, message);
         else
-            syslog (priority, "%s (%s:%d)", message, file, line);
+            syslog (priority, "%s", message);
     }
 #else
     (void) level;
