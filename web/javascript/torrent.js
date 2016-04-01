@@ -101,12 +101,12 @@ Torrent.Fields.StatsExtra = [
 	'desiredAvailable',
 	'downloadedEver',
 	'fileStats',
-	'haveUnchecked',
-	'haveValid',
-	'peers',
-	'sequential',
-	'startDate',
-	'trackerStats'
+        'haveUnchecked',
+        'haveValid',
+        'peers',
+        'sequential',
+        'startDate',
+        'trackerStats'
 ];
 
 /***
@@ -132,7 +132,7 @@ Torrent.prototype =
 	setField: function(o, name, value)
 	{
 		var i, observer;
-
+		
 		if (o[name] === value)
 			return false;
 		if (o == this.fields && this.fieldObservers[name] && this.fieldObservers[name].length) {
@@ -228,25 +228,25 @@ Torrent.prototype =
 	getHaveUnchecked: function() { return this.fields.haveUnchecked; },
 	getHaveValid: function() { return this.fields.haveValid; },
 	getId: function() { return this.fields.id; },
-	getLastActivity: function() { return this.fields.activityDate; },
-	getLeftUntilDone: function() { return this.fields.leftUntilDone; },
-	getMetadataPercentComplete: function() { return this.fields.metadataPercentComplete; },
-	getName: function() { return this.fields.name || 'Unknown'; },
-	getPeers: function() { return this.fields.peers; },
-	getPeersConnected: function() { return this.fields.peersConnected; },
-	getPeersGettingFromUs: function() { return this.fields.peersGettingFromUs; },
+        getLastActivity: function() { return this.fields.activityDate; },
+        getLeftUntilDone: function() { return this.fields.leftUntilDone; },
+        getMetadataPercentComplete: function() { return this.fields.metadataPercentComplete; },
+        getName: function() { return this.fields.name || '-'; },
+        getPeers: function() { return this.fields.peers; },
+        getPeersConnected: function() { return this.fields.peersConnected; },
+        getPeersGettingFromUs: function() { return this.fields.peersGettingFromUs; },
 	getPeersSendingToUs: function() { return this.fields.peersSendingToUs; },
 	getPieceCount: function() { return this.fields.pieceCount; },
 	getPieceSize: function() { return this.fields.pieceSize; },
 	getPrivateFlag: function() { return this.fields.isPrivate; },
 	getQueuePosition: function() { return this.fields.queuePosition; },
-	getRecheckProgress: function() { return this.fields.recheckProgress; },
-	getSeedRatioLimit: function() { return this.fields.seedRatioLimit; },
-	getSeedRatioMode: function() { return this.fields.seedRatioMode; },
-	getSequential: function() { return this.fields.sequential; },
-	getSizeWhenDone: function() { return this.fields.sizeWhenDone; },
-	getStartDate: function() { return this.fields.startDate; },
-	getStatus: function() { return this.fields.status; },
+        getRecheckProgress: function() { return this.fields.recheckProgress; },
+        getSeedRatioLimit: function() { return this.fields.seedRatioLimit; },
+        getSeedRatioMode: function() { return this.fields.seedRatioMode; },
+        getSequential: function() { return this.fields.sequential; },
+        getSizeWhenDone: function() { return this.fields.sizeWhenDone; },
+        getStartDate: function() { return this.fields.startDate; },
+        getStatus: function() { return this.fields.status; },
 	getTotalSize: function() { return this.fields.totalSize; },
 	getTrackers: function() { return this.fields.trackers; },
 	getUploadSpeed: function() { return this.fields.rateUpload; },
@@ -258,31 +258,31 @@ Torrent.prototype =
 	// derived accessors
 	hasExtraInfo: function() { return 'hashString' in this.fields; },
 	isSeeding: function() { return this.getStatus() === Torrent._StatusSeed; },
-	isStopped: function() { return this.getStatus() === Torrent._StatusStopped; },
-	isChecking: function() { return this.getStatus() === Torrent._StatusCheck; },
-	isDownloading: function() { return this.getStatus() === Torrent._StatusDownload; },
-	isQueued: function() { return this.getStatus() === Torrent._StatusDownloadWait ||
-	                              this.getStatus() === Torrent._StatusSeedWait; },
-	isDone: function() { return this.getLeftUntilDone() < 1; },
-	needsMetaData: function(){ return this.getMetadataPercentComplete() < 1; },
-	getActivity: function() { return this.getDownloadSpeed() + this.getUploadSpeed(); },
+        isStopped: function() { return this.getStatus() === Torrent._StatusStopped; },
+        isChecking: function() { return this.getStatus() === Torrent._StatusCheck; },
+        isDownloading: function() { return this.getStatus() === Torrent._StatusDownload; },
+        isQueued: function() { return this.getStatus() === Torrent._StatusDownloadWait ||
+                                      this.getStatus() === Torrent._StatusSeedWait; },
+        isDone: function() { return this.getLeftUntilDone() < 1; },
+        needsMetaData: function(){ return this.getMetadataPercentComplete() < 1; },
+        getActivity: function() { return this.getDownloadSpeed() + this.getUploadSpeed(); },
 	getPercentDoneStr: function() { return Transmission.fmt.percentString(100*this.getPercentDone()); },
-	getPercentDone: function() { return this.fields.percentDone; },
-	getStateString: function() {
-		switch(this.getStatus()) {
-			case Torrent._StatusStopped:        return this.isFinished() ? 'Seeding complete' : 'Paused';
-			case Torrent._StatusCheckWait:      return 'Queued for verification';
-			case Torrent._StatusCheck:          return 'Verifying local data';
-			case Torrent._StatusDownloadWait:   return 'Queued for download';
-			case Torrent._StatusDownload:       return 'Downloading';
-			case Torrent._StatusSeedWait:       return 'Queued for seeding';
-			case Torrent._StatusSeed:           return 'Seeding';
-			case null:
-			case undefined:                     return 'Unknown';
-			default:                            return 'Error';
-		}
-	},
-	seedRatioLimit: function(controller){
+        getPercentDone: function() { return this.fields.percentDone; },
+        getStateString: function() {
+                switch(this.getStatus()) {
+                        case Torrent._StatusStopped:        return 'Загрузка ' + (this.isFinished() ? 'завершена' : 'приостановлена');
+                        case Torrent._StatusCheckWait:      return 'В очереди на проверку';
+                        case Torrent._StatusCheck:          return 'Проверка локальных данных';
+                        case Torrent._StatusDownloadWait:   return 'В очереди для загрузки';
+                        case Torrent._StatusDownload:       return 'Загрузка';
+                        case Torrent._StatusSeedWait:       return 'В очереди для раздачи';
+                        case Torrent._StatusSeed:           return 'Раздача';
+                        case null:
+                        case undefined:                     return '-';
+                        default:                            return 'Ошибка';
+                }
+        },
+        seedRatioLimit: function(controller){
 		switch(this.getSeedRatioMode()) {
 			case Torrent._RatioUseGlobal: return controller.seedRatioLimit();
 			case Torrent._RatioUseLocal:  return this.getSeedRatioLimit();
@@ -290,17 +290,17 @@ Torrent.prototype =
 		}
 	},
 	getErrorMessage: function() {
-		var str = this.getErrorString();
-		switch(this.getError()) {
-			case Torrent._ErrTrackerWarning:
-				return 'Tracker returned a warning: ' + str;
-			case Torrent._ErrTrackerError:
-				return 'Tracker returned an error: ' + str;
-			case Torrent._ErrLocalError:
-				return 'Error: ' + str;
-			default:
-				return null;
-		}
+                var str = this.getErrorString();
+                switch(this.getError()) {
+                        case Torrent._ErrTrackerWarning:
+                                return 'Трекер вернул предупреждение: ' + str;
+                        case Torrent._ErrTrackerError:
+                                return 'Трекер вернул ошибку: ' + str;
+                        case Torrent._ErrLocalError:
+                                return 'Ошибка: ' + str;
+                        default:
+                                return null;
+                }
 	},
 	getCollatedName: function() {
 		var f = this.fields;
@@ -422,14 +422,14 @@ Torrent.compareByProgress = function(ta, tb)
 	var a = ta.getPercentDone(),
 	    b = tb.getPercentDone();
 
-	return (a - b) || Torrent.compareByRatio(ta, tb);
+        return (a - b) || Torrent.compareByRatio(ta, tb);
 };
 Torrent.compareBySize = function(ta, tb)
 {
-	var a = ta.getTotalSize(),
-	    b = tb.getTotalSize();
+    var a = ta.getTotalSize(),
+        b = tb.getTotalSize();
 
-	return (a - b) || Torrent.compareByName(ta, tb);
+    return (a - b) || Torrent.compareByName(ta, tb);
 };
 
 Torrent.compareTorrents = function(a, b, sortMethod, sortDirection)
@@ -450,9 +450,9 @@ Torrent.compareTorrents = function(a, b, sortMethod, sortDirection)
 		case Prefs._SortByProgress:
 			i = Torrent.compareByProgress(a,b);
 			break;
-		case Prefs._SortBySize:
-			i = Torrent.compareBySize(a,b);
-			break;
+        case Prefs._SortBySize:
+            i = Torrent.compareBySize(a,b);
+            break;
 		case Prefs._SortByState:
 			i = Torrent.compareByState(a,b);
 			break;
@@ -491,9 +491,9 @@ Torrent.sortTorrents = function(torrents, sortMethod, sortDirection)
 		case Prefs._SortByProgress:
 			torrents.sort(this.compareByProgress);
 			break;
-		case Prefs._SortBySize:
-			torrents.sort(this.compareBySize);
-			break;
+        case Prefs._SortBySize:
+            torrents.sort(this.compareBySize);
+            break;
 		case Prefs._SortByState:
 			torrents.sort(this.compareByState);
 			break;
