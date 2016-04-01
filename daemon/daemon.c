@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <stdio.h> /* printf */
 #include <stdlib.h> /* atoi */
+#include <string.h> /* strcmp */
 
 #ifdef HAVE_SYSLOG
 #include <syslog.h>
@@ -367,6 +368,7 @@ static bool parse_args(int argc, char const** argv, tr_variant* settings, bool* 
 {
     int c;
     char const* optarg;
+    const char* downloadDir = NULL;
 
     *paused = false;
     *dump_settings = false;
@@ -462,7 +464,14 @@ static bool parse_args(int argc, char const** argv, tr_variant* settings, bool* 
             break;
 
         case 'w':
-            tr_variantDictAddStr(settings, TR_KEY_download_dir, optarg);
+            if (!tr_variantDictFindStr(settings, TR_KEY_download_dir, &downloadDir, NULL) ||
+                downloadDir == NULL ||
+                downloadDir[0] == '\0' ||
+                strcmp(downloadDir, tr_getDefaultDownloadDir()) == 0)
+            {
+                tr_variantDictAddStr(settings, TR_KEY_download_dir, optarg);
+            }
+
             break;
 
         case 'P':
