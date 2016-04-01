@@ -28,7 +28,7 @@ $.fn.tabbedDialog = function (dialog_opts) {
 	this.find('.ui-tab-dialog-close').css({'position':'absolute','right':'0', 'top':'16px'});
 	this.find('.ui-tab-dialog-close > a').css({'float':'none','padding':'0'});
 	var tabul = this.find('ul:first');
-	this.parent().addClass('ui-tabs').prepend(tabul).draggable('option','handle',tabul);
+	this.parent().addClass('ui-tabs').prepend(tabul).draggable('option','handle',tabul); 
 	this.siblings('.ui-dialog-titlebar').remove();
 	tabul.addClass('ui-dialog-titlebar');
 }
@@ -61,13 +61,13 @@ $(document).ready(function() {
 			// Fix min height for isMobileDevice when run in full screen mode from home screen
 			// so the footer appears in the right place
 			$('body div#torrent_container').css('min-height', '338px');
-		$("label[for=torrent_upload_url]").text("URL: ");
-	} else {
-		// Fix for non-Safari-3 browsers: dark borders to replace shadows.
-		$('div.dialog_container div.dialog_window').css('border', '1px solid #777');
-	}
+                $("label[for=torrent_upload_url]").text("URL: ");
+        } else {
+                // Fix for non-Safari-3 browsers: dark borders to replace shadows.
+                $('div.dialog_container div.dialog_window').css('border', '1px solid #777');
+        }
 
-	// Initialise the dialog controller
+        // Initialise the dialog controller
 	dialog = new Dialog();
 
 	// Initialise the main Transmission controller
@@ -189,11 +189,11 @@ Prefs._Defaults =
  */
 Prefs.setValue = function(key, val)
 {
-	if (!(key in Prefs._Defaults))
-		console.warn("unrecognized preference key '%s'", key);
+        if (!(key in Prefs._Defaults))
+                console.warn("неизвестный параметр '%s'", key);
 
-	var date = new Date();
-	date.setFullYear (date.getFullYear() + 1);
+        var date = new Date();
+        date.setFullYear (date.getFullYear() + 1);
 	document.cookie = key+"="+val+"; expires="+date.toGMTString()+"; path=/";
 };
 
@@ -205,13 +205,13 @@ Prefs.setValue = function(key, val)
  */
 Prefs.getValue = function(key, fallback)
 {
-	var val;
+        var val;
 
-	if (!(key in Prefs._Defaults))
-		console.warn("unrecognized preference key '%s'", key);
+        if (!(key in Prefs._Defaults))
+                console.warn("неизвестный параметр '%s'", key);
 
-	var lines = document.cookie.split(';');
-	for (var i=0, len=lines.length; !val && i<len; ++i) {
+        var lines = document.cookie.split(';');
+        for (var i=0, len=lines.length; !val && i<len; ++i) {
 		var line = lines[i].trim();
 		var delim = line.indexOf('=');
 		if ((delim === key.length) && line.indexOf(key) === 0)
@@ -246,7 +246,7 @@ jQuery.fn.forceNumeric = function () {
 		$(this).keydown(function (e) {
 			var key = e.which || e.keyCode;
 			return !e.shiftKey && !e.altKey && !e.ctrlKey &&
-				// numbers
+				// numbers   
 				key >= 48 && key <= 57 ||
 				// Numeric keypad
 				key >= 96 && key <= 105 ||
