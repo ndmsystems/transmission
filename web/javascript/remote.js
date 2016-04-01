@@ -54,20 +54,20 @@ TransmissionRemote.prototype =
 		}
 
 		remote._error = request.responseText
-		              ? request.responseText.trim().replace(/(<([^>]+)>)/ig,"")
-		              : "";
-		if (!remote._error.length)
-			remote._error = 'Server not responding';
+                                        ? request.responseText.trim().replace(/(<([^>]+)>)/ig,"")
+                                        : "";
+                if (!remote._error.length)
+                        remote._error = 'Сервер не отвечает';
 
-		dialog.confirm('Connection Failed',
-			'Could not connect to the server. You may need to reload the page to reconnect.',
-			'Details',
-			function() {
-				alert(remote._error);
-			},
-			'Dismiss');
-		remote._controller.togglePeriodicSessionRefresh(false);
-	},
+                dialog.confirm('Ошибка соединения',
+                        'Невозможно подключится к серверу. Попробуйте перезагрузить страницу.',
+                        'Детали',
+                        function() {
+                                alert(remote._error);
+                        },
+                        'Отмена');
+                remote._controller.togglePeriodicSessionRefresh(false);
+        },
 
 	appendSessionId: function(XHR) {
 		if (this._token) {
@@ -101,36 +101,36 @@ TransmissionRemote.prototype =
 		var o = { method: 'session-get' };
 		this.sendRequest(o, callback, context, async);
 	},
-
+	
 	checkPort: function(callback, context, async) {
 		var o = { method: 'port-test' };
 		this.sendRequest(o, callback, context, async);
-	},
+        },
 
-	renameTorrent: function(torrentIds, oldpath, newname, callback, context) {
-		var o = {
-			method: 'torrent-rename-path',
-			arguments: {
-				'ids': torrentIds,
-				'path': oldpath,
-				'name': newname
-			}
-		};
-		this.sendRequest(o, callback, context);
-	},
+        renameTorrent: function(torrentIds, oldpath, newname, callback, context) {
+                var o = {
+                        method: 'torrent-rename-path',
+                        arguments: {
+                                'ids': torrentIds,
+                                       'path': oldpath,
+                                'name': newname
+                        }
+                };
+                this.sendRequest(o, callback, context);
+        },
 
 	loadDaemonStats: function(callback, context, async) {
 		var o = { method: 'session-stats' };
 		this.sendRequest(o, callback, context, async);
 	},
 
-	updateTorrents: function(torrentIds, fields, callback, context) {
-		var o = {
-			method: 'torrent-get',
-			arguments: {
-				'fields': fields
-			}
-		};
+        updateTorrents: function(torrentIds, fields, callback, context) {
+                var o = {
+                        method: 'torrent-get',
+                        arguments: {
+                                'fields': fields
+                        }
+                };
 		if (torrentIds)
 			o['arguments'].ids = torrentIds;
 		this.sendRequest(o, function(response) {
@@ -187,7 +187,7 @@ TransmissionRemote.prototype =
 
 	moveTorrents: function(torrent_ids, new_location, callback, context) {
 		var remote = this;
-		this.sendTorrentSetRequests( 'torrent-set-location', torrent_ids,
+		this.sendTorrentSetRequests( 'torrent-set-location', torrent_ids, 
 			{"move": true, "location": new_location}, callback, context);
 	},
 
