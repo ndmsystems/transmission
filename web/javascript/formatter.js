@@ -7,28 +7,28 @@
 
 Transmission.fmt = (function()
 {
-	var speed_K = 1000;
-	var speed_B_str =  'B/s';
-	var speed_K_str = 'kB/s';
-	var speed_M_str = 'MB/s';
-	var speed_G_str = 'GB/s';
-	var speed_T_str = 'TB/s';
+        var speed_K = 1000;
+        var speed_B_str =  'Б/с';
+        var speed_K_str = 'КБ/с';
+        var speed_M_str = 'МБ/с';
+        var speed_G_str = 'ГБ/с';
+        var speed_T_str = 'ТБ/с';
 
-	var size_K = 1000;
-	var size_B_str =  'B';
-	var size_K_str = 'kB';
-	var size_M_str = 'MB';
-	var size_G_str = 'GB';
-	var size_T_str = 'TB';
+        var size_K = 1000;
+        var size_B_str =  'Б';
+        var size_K_str = 'КБ';
+        var size_M_str = 'МБ';
+        var size_G_str = 'ГБ';
+        var size_T_str = 'ТБ';
 
-	var mem_K = 1024;
-	var mem_B_str =   'B';
-	var mem_K_str = 'KiB';
-	var mem_M_str = 'MiB';
-	var mem_G_str = 'GiB';
-	var mem_T_str = 'TiB';
+        var mem_K = 1024;
+        var mem_B_str =   'Б';
+        var mem_K_str = 'КиБ';
+        var mem_M_str = 'МиБ';
+        var mem_G_str = 'ГиБ';
+        var mem_T_str = 'ТиБ';
 
-	return {
+        return {
 
 		updateUnits: function(u)
 		{
@@ -67,13 +67,13 @@ Transmission.fmt = (function()
 
 		/*
 		 *   Format a ratio to a string
-		 */
-		ratioString: function(x) {
-			if (x === -1)
-				return "None";
-			if (x === -2)
-				return '&infin;';
-			return this.percentString(x);
+                 */
+                ratioString: function(x) {
+                        if (x === -1)
+                                return '-';
+                        if (x === -2)
+                                return '&infin;';
+                        return this.percentString(x);
 		},
 
 		/**
@@ -183,19 +183,24 @@ Transmission.fmt = (function()
 			return [ speed.toTruncFixed(2), speed_G_str ].join(' ');
 		},
 
-		timeInterval: function(seconds)
-		{
-			var days    = Math.floor (seconds / 86400),
-			    hours   = Math.floor ((seconds % 86400) / 3600),
-			    minutes = Math.floor ((seconds % 3600) / 60),
-			    seconds = Math.floor (seconds % 60),
-			    d = days    + ' ' + (days    > 1 ? 'days'    : 'day'),
-			    h = hours   + ' ' + (hours   > 1 ? 'hours'   : 'hour'),
-			    m = minutes + ' ' + (minutes > 1 ? 'minutes' : 'minute'),
-			    s = seconds + ' ' + (seconds > 1 ? 'seconds' : 'second');
+                timeInterval: function(seconds)
+                {
+                        var days    = Math.floor (seconds / 86400),
+                            hours   = Math.floor ((seconds % 86400) / 3600),
+                            minutes = Math.floor ((seconds % 3600) / 60),
+                            seconds = Math.floor (seconds % 60),
+                                /*             1          2-4        5-0 & 10-19 */
+                            dayNames =    ["день",    "дня",     "дней"   ],
+                            hourNames =   ["час",     "часа",    "часов"  ],
+                            minuteNames = ["минута",  "минуты",  "минут"  ],
+                            secondNames = ["секунда", "секунды", "секунд" ],
+                                d = days    + ' ' + _n(days,    dayNames   ),
+                            h = hours   + ' ' + _n(hours,   hourNames  ),
+                            m = minutes + ' ' + _n(minutes, minuteNames),
+                            s = seconds + ' ' + _n(seconds, secondNames);
 
-			if (days) {
-				if (days >= 4 || !hours)
+                        if (days) {
+                                if (days >= 4 || !hours)
 					return d;
 				return d + ', ' + h;
 			}
@@ -212,13 +217,13 @@ Transmission.fmt = (function()
 			return s;
 		},
 
-		timestamp: function(seconds)
-		{
-			if (!seconds)
-				return 'N/A';
+                timestamp: function(seconds)
+                {
+                        if (!seconds)
+                                return 'Н/Д';
 
-			var myDate = new Date(seconds*1000);
-			var now = new Date();
+                        var myDate = new Date(seconds*1000);
+                        var now = new Date();
 
 			var date = "";
 			var time = "";
@@ -226,19 +231,19 @@ Transmission.fmt = (function()
 			var sameYear = now.getFullYear() === myDate.getFullYear();
 			var sameMonth = now.getMonth() === myDate.getMonth();
 
-			var dateDiff = now.getDate() - myDate.getDate();
-			if (sameYear && sameMonth && Math.abs(dateDiff) <= 1){
-				if (dateDiff === 0){
-					date = "Today";
-				}
-				else if (dateDiff === 1){
-					date = "Yesterday";
-				}
-				else{
-					date = "Tomorrow";
-				}
-			}
-			else{
+                        var dateDiff = now.getDate() - myDate.getDate();
+                        if (sameYear && sameMonth && Math.abs(dateDiff) <= 1){
+                                if (dateDiff === 0){
+                                        date = "Сегодня";
+                                }
+                                else if (dateDiff === 1){
+                                        date = "Вчера";
+                                }
+                                else{
+                                        date = "Завтра";
+                                }
+                        }
+                        else{
 				date = myDate.toDateString();
 			}
 
@@ -279,35 +284,35 @@ Transmission.fmt = (function()
 			return [ n.toStringWithCommas(), this.ngettext(msgid,msgid_plural,n) ].join(' ');
 		},
 
-		peerStatus: function( flagStr )
-		{
-			var formattedFlags = [];
+		peerStatus: function( flagStr ) 
+		{ 
+			var formattedFlags = []; 
 			for (var i=0, flag; flag=flagStr[i]; ++i)
 			{
-				var explanation = null;
-				switch (flag)
-				{
-					case "O": explanation = "Optimistic unchoke"; break;
-					case "D": explanation = "Downloading from this peer"; break;
-					case "d": explanation = "We would download from this peer if they'd let us"; break;
-					case "U": explanation = "Uploading to peer"; break;
-					case "u": explanation = "We would upload to this peer if they'd ask"; break;
-					case "K": explanation = "Peer has unchoked us, but we're not interested"; break;
-					case "?": explanation = "We unchoked this peer, but they're not interested"; break;
-					case "E": explanation = "Encrypted Connection"; break;
-					case "H": explanation = "Peer was discovered through Distributed Hash Table (DHT)"; break;
-					case "X": explanation = "Peer was discovered through Peer Exchange (PEX)"; break;
-					case "I": explanation = "Peer is an incoming connection"; break;
-					case "T": explanation = "Peer is connected via uTP"; break;
-				}
+                                var explanation = null;
+                                switch (flag)
+                                {
+                                        case "O": explanation = "Сейчас начнется скачивание"; break;
+                                        case "D": explanation = "Загрузка с этого пира"; break;
+                                        case "d": explanation = "Загрузка с этого пира, если нам позволят"; break;
+                                        case "U": explanation = "Отдача этому пиру"; break;
+                                        case "u": explanation = "Отдача этому пиру, если нас попросят"; break;
+                                        case "K": explanation = "Пир готов отдать нам, но мы не заинтересованы"; break;
+                                        case "?": explanation = "Мы готовы отдать пиру, но он не заинтересован"; break;
+                                        case "E": explanation = "Соединение с шифрованием"; break;
+                                        case "H": explanation = "Пир был обнаружен через DHT"; break;
+                                        case "X": explanation = "Пир был обнаружен через PEX"; break;
+                                        case "I": explanation = "Пир входящего соединения"; break;
+                                        case "T": explanation = "Пир подключается по uTP"; break;
+                                }
 
-				if (!explanation) {
-					formattedFlags.push(flag);
-				} else {
-					formattedFlags.push("<span title=\"" + flag + ': ' + explanation + "\">" + flag + "</span>");
-				}
-			}
-			return formattedFlags.join('');
+                                if (!explanation) { 
+					formattedFlags.push(flag); 
+				} else { 
+					formattedFlags.push("<span title=\"" + flag + ': ' + explanation + "\">" + flag + "</span>"); 
+				} 
+			} 
+			return formattedFlags.join(''); 
 		}
 	}
 })();
