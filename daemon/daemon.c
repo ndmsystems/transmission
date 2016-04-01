@@ -50,7 +50,7 @@ static void sd_notifyf(int status UNUSED, char const* fmt UNUSED, ...)
 
 #include "daemon.h"
 
-#define MY_NAME "transmission-daemon"
+#define MY_NAME "transmissiond"
 
 #define MEM_K 1024
 #define MEM_K_STR "KiB"
@@ -256,7 +256,8 @@ static tr_watchdir_status onFileAdded(tr_watchdir_t dir, char const* name, void*
     return err == TR_PARSE_ERR ? TR_WATCHDIR_RETRY : TR_WATCHDIR_ACCEPT;
 }
 
-static void printMessage(tr_sys_file_t logfile, int level, char const* name, char const* message, char const* file, int line)
+static void printMessage(tr_sys_file_t logfile, int level, char const* name, char const* message, char const* file UNUSED,
+    int line UNUSED)
 {
     if (logfile != TR_BAD_SYS_FILE)
     {
@@ -265,11 +266,11 @@ static void printMessage(tr_sys_file_t logfile, int level, char const* name, cha
 
         if (name != NULL)
         {
-            tr_sys_file_write_fmt(logfile, "[%s] %s %s (%s:%d)" TR_NATIVE_EOL_STR, NULL, timestr, name, message, file, line);
+            tr_sys_file_write_fmt(logfile, "[%s] %s %s" TR_NATIVE_EOL_STR, NULL, timestr, name, message);
         }
         else
         {
-            tr_sys_file_write_fmt(logfile, "[%s] %s (%s:%d)" TR_NATIVE_EOL_STR, NULL, timestr, message, file, line);
+            tr_sys_file_write_fmt(logfile, "[%s] %s" TR_NATIVE_EOL_STR, NULL, timestr, message);
         }
     }
 
@@ -297,11 +298,11 @@ static void printMessage(tr_sys_file_t logfile, int level, char const* name, cha
 
         if (name != NULL)
         {
-            syslog(priority, "%s %s (%s:%d)", name, message, file, line);
+            syslog(priority, "%s %s", name, message);
         }
         else
         {
-            syslog(priority, "%s (%s:%d)", message, file, line);
+            syslog(priority, "%s", message);
         }
     }
 
