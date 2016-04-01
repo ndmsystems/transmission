@@ -42,14 +42,14 @@ function FileRow(torrent, depth, name, indices, even)
 		$(e[0].checkbox).prop('checked', fields.isWanted);
 	},
 	refreshProgressHTML = function()
-	{
-		var pct = 100 * (fields.size ? (fields.have / fields.size) : 1.0),
-		    c = [ Transmission.fmt.size(fields.have),
-		          ' of ',
-		          Transmission.fmt.size(fields.size),
-		          ' (',
-		          Transmission.fmt.percentString(pct),
-		          '%)' ].join('');
+        {
+                var pct = 100 * (fields.size ? (fields.have / fields.size) : 1.0),
+                    c = [ Transmission.fmt.size(fields.have),
+                          ' из ',
+                          Transmission.fmt.size(fields.size),
+                          ' (',
+                          Transmission.fmt.percentString(pct),
+			  '%)' ].join('');
 		setTextContent(elements.progress, c);
 	},
 	refreshImpl = function() {
@@ -116,37 +116,37 @@ function FileRow(torrent, depth, name, indices, even)
 		root.className = 'inspector_torrent_file_list_entry' + (even?'even':'odd');
 		elements.root = root;
 
-		e = document.createElement('input');
-		e.type = 'checkbox';
-		e.className = "file_wanted_control";
-		e.title = 'Download file';
-		$(e).change(function(ev){ fireWantedChanged( $(ev.currentTarget).prop('checked')); });
-		root.checkbox = e;
-		root.appendChild(e);
+                e = document.createElement('input');
+                e.type = 'checkbox';
+                e.className = "file_wanted_control";
+                e.title = 'Приоритет';
+                $(e).change(function(ev){ fireWantedChanged( $(ev.currentTarget).prop('checked')); });
+                root.checkbox = e;
+                root.appendChild(e);
 
 		e = document.createElement('div');
 		e.className = 'file-priority-radiobox';
 		box = e;
 
-			e = document.createElement('div');
-			e.className = 'low';
-			e.title = 'Low Priority';
-			$(e).click(function(){ firePriorityChanged(-1); });
-			elements.priority_low_button = e;
-			box.appendChild(e);
+                        e = document.createElement('div');
+                        e.className = 'low';
+                        e.title = 'Низкий';
+                        $(e).click(function(){ firePriorityChanged(-1); });
+                        elements.priority_low_button = e;
+                        box.appendChild(e);
 
-			e = document.createElement('div');
-			e.className = 'normal';
-			e.title = 'Normal Priority';
-			$(e).click(function(){ firePriorityChanged(0); });
-			elements.priority_normal_button = e;
-			box.appendChild(e);
+                        e = document.createElement('div');
+                        e.className = 'normal';
+                        e.title = 'Нормальный';
+                        $(e).click(function(){ firePriorityChanged(0); });
+                        elements.priority_normal_button = e;
+                        box.appendChild(e);
 
-			e = document.createElement('div');
-			e.title = 'High Priority';
-			e.className = 'high';
-			$(e).click(function(){ firePriorityChanged(1); });
-			elements.priority_high_button = e;
+                        e = document.createElement('div');
+                        e.title = 'Высокий';
+                        e.className = 'high';
+                        $(e).click(function(){ firePriorityChanged(1); });
+                        elements.priority_high_button = e;
 			box.appendChild(e);
 
 		root.appendChild(box);
