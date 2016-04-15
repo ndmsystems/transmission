@@ -5,6 +5,10 @@
  * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  */
 
+function isInteger(value) {
+    return !isNaN(value && Math.floor(value) === parseInt(value));
+}
+
 function Inspector(controller) {
 
     var data = {
