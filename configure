@@ -21499,7 +21499,7 @@ fi
 
 
 
-ac_config_files="$ac_config_files Makefile transmission-gtk.spec cli/Makefile daemon/Makefile extras/Makefile libtransmission/Makefile utils/Makefile third-party/Makefile third-party/dht/Makefile third-party/libb64/Makefile third-party/libutp/Makefile third-party/libnatpmp/Makefile third-party/miniupnp/Makefile macosx/Makefile gtk/Makefile gtk/icons/Makefile qt/config.pri web/Makefile web/images/Makefile web/style/Makefile web/style/jqueryui/Makefile web/style/jqueryui/images/Makefile web/style/transmission/Makefile web/style/transmission/images/Makefile web/style/transmission/images/buttons/Makefile web/javascript/Makefile web/javascript/jquery/Makefile po/Makefile.in"
+ac_config_files="$ac_config_files Makefile transmission-gtk.spec cli/Makefile daemon/Makefile extras/Makefile libtransmission/Makefile third-party/Makefile third-party/dht/Makefile third-party/libb64/Makefile third-party/libutp/Makefile third-party/libnatpmp/Makefile third-party/miniupnp/Makefile macosx/Makefile gtk/Makefile gtk/icons/Makefile qt/config.pri web/Makefile web/images/Makefile web/style/Makefile web/style/jqueryui/Makefile web/style/jqueryui/images/Makefile web/style/transmission/Makefile web/style/transmission/images/Makefile web/style/transmission/images/buttons/Makefile web/javascript/Makefile web/javascript/jquery/Makefile po/Makefile.in"
 
 
 cat >confcache <<\_ACEOF
@@ -22718,7 +22718,6 @@ do
     "daemon/Makefile") CONFIG_FILES="$CONFIG_FILES daemon/Makefile" ;;
     "extras/Makefile") CONFIG_FILES="$CONFIG_FILES extras/Makefile" ;;
     "libtransmission/Makefile") CONFIG_FILES="$CONFIG_FILES libtransmission/Makefile" ;;
-    "utils/Makefile") CONFIG_FILES="$CONFIG_FILES utils/Makefile" ;;
     "third-party/Makefile") CONFIG_FILES="$CONFIG_FILES third-party/Makefile" ;;
     "third-party/dht/Makefile") CONFIG_FILES="$CONFIG_FILES third-party/dht/Makefile" ;;
     "third-party/libb64/Makefile") CONFIG_FILES="$CONFIG_FILES third-party/libb64/Makefile" ;;
