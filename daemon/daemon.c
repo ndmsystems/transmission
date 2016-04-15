@@ -605,7 +605,7 @@ static void daemon_stop(void* arg UNUSED)
     event_base_loopexit(ev_base, NULL);
 }
 
-static int daemon_start(void* raw_arg, bool foreground)
+static int daemon_start(void* raw_arg, bool foreground UNUSED)
 {
     bool boolVal;
     char const* pid_filename;
@@ -617,10 +617,6 @@ static int daemon_start(void* raw_arg, bool foreground)
     struct daemon_data* const arg = raw_arg;
     tr_variant* const settings = &arg->settings;
     char const* const configDir = arg->configDir;
-
-#ifndef HAVE_SYSLOG
-    (void)foreground;
-#endif
 
     sd_notifyf(0, "MAINPID=%d\n", (int)getpid());
 
@@ -721,12 +717,7 @@ static int daemon_start(void* raw_arg, bool foreground)
     }
 
 #ifdef HAVE_SYSLOG
-
-    if (!foreground)
-    {
-        openlog(MY_NAME, LOG_CONS | LOG_PID, LOG_DAEMON);
-    }
-
+    openlog(MY_NAME, LOG_CONS | LOG_PID, LOG_DAEMON);
 #endif
 
     /* Create new timer event to report daemon status */
@@ -777,13 +768,8 @@ cleanup:
 
     /* shutdown */
 #ifdef HAVE_SYSLOG
-
-    if (!foreground)
-    {
-        syslog(LOG_INFO, "%s", "Closing session");
-        closelog();
-    }
-
+    syslog(LOG_INFO, "%s", "Closing session");
+    closelog();
 #endif
 
     /* cleanup */
@@ -816,10 +802,7 @@ static bool init_daemon_data(int argc, char* argv[], struct daemon_data* data, b
         goto exit_early;
     }
 
-    if (*foreground && logfile == TR_BAD_SYS_FILE)
-    {
-        logfile = tr_sys_file_get_std(TR_STD_SYS_FILE_ERR, NULL);
-    }
+    logfile = tr_sys_file_get_std(TR_STD_SYS_FILE_ERR, NULL);
 
     if (!loaded)
     {
