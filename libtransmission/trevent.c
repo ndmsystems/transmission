@@ -318,6 +318,9 @@ libeventThreadFunc (void * veh)
     while (!eh->die)
         event_base_dispatch (base);
 
+#ifdef HAVE_NDM
+    event_free (eh->ndmEvent);
+#endif
     /* shut down the thread */
     tr_lockFree (eh->lock);
     event_base_free (base);
