@@ -132,7 +132,7 @@ AC_ARG_WITH([crypto], AS_HELP_STRING([--with-crypto=PKG],
 
 AS_IF([test "x$want_crypto" = "xauto" -o "x$want_crypto" = "xopenssl"], [
     PKG_CHECK_MODULES(OPENSSL, [openssl >= $OPENSSL_MINIMUM],
-        [want_crypto="openssl"; CRYPTO_PKG="openssl"; CRYPTO_CFLAGS="$OPENSSL_CFLAGS"; CRYPTO_LIBS="$OPENSSL_LIBS"],
+        [want_crypto="openssl"; CRYPTO_PKG="openssl"; CRYPTO_CFLAGS="$OPENSSL_CFLAGS"; CRYPTO_LIBS=`echo $OPENSSL_LIBS | sed -e 's/-lssl//'`],
         [AS_IF([test "x$want_crypto" = "xopenssl"],
             [AC_MSG_ERROR([OpenSSL support requested, but library not found.])]
         )]
