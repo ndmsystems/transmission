@@ -80,6 +80,7 @@ static tr_session* mySession = NULL;
 static tr_quark key_pidfile = 0;
 static tr_quark key_watch_dir_force_generic = 0;
 static struct event_base* ev_base = NULL;
+static struct event* save_ev = NULL;
 
 /***
 ****  Config File
@@ -352,12 +353,37 @@ static void periodicUpdate(evutil_socket_t fd UNUSED, short what UNUSED, void* c
     reportStatus();
 }
 
+static void deferredSave(evutil_socket_t fd UNUSED, short what UNUSED, void* session)
+{
+    if (session)
+    {
+        tr_variant sessionSettings;
+        const char* configDir = tr_sessionGetConfigDir(session);
+
+        tr_variantInitDict(&sessionSettings, 0);
+        tr_sessionGetSettings(session, &sessionSettings);
+        tr_sessionSaveSettings(session, configDir, &sessionSettings);
+        tr_variantFree(&sessionSettings);
+    }
+}
+
 static tr_rpc_callback_status on_rpc_callback(tr_session* session UNUSED, tr_rpc_callback_type type,
     struct tr_torrent* tor UNUSED, void* user_data UNUSED)
 {
     if (type == TR_RPC_SESSION_CLOSE)
     {
         event_base_loopexit(ev_base, NULL);
+    }
+
+    if (type == TR_RPC_SESSION_CHANGED && save_ev)
+    {
+        struct timeval one_sec = { 1, 0 };
+
+        if (event_add(save_ev, &one_sec) == -1)
+        {
+            /* try to make an immediate call */
+            deferredSave(-1, EV_TIMEOUT, session);
+        }
     }
 
     return TR_RPC_OK;
@@ -747,6 +773,16 @@ static int daemon_start(void* raw_arg, bool foreground UNUSED)
         }
     }
 
+    /* Create event for deferred settings saving */
+    {
+        save_ev = event_new(ev_base, -1, EV_TIMEOUT, &deferredSave, session);
+        if (save_ev == NULL)
+        {
+            tr_logAddError("Failed to create a deferred save settings event %s", tr_strerror(errno));
+            goto cleanup;
+        }
+    }
+
     sd_notify(0, "READY=1\n");
 
     /* Run daemon event loop */
@@ -761,6 +797,12 @@ cleanup:
     printf("Closing transmission session...");
 
     tr_watchdir_free(watchdir);
+
+    if (save_ev)
+    {
+        event_del(save_ev);
+        event_free(save_ev);
+    }
 
     if (status_ev != NULL)
     {
