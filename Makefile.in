@@ -159,7 +159,7 @@ am__define_uniq_tagged_files = \
 ETAGS = etags
 CTAGS = ctags
 CSCOPE = cscope
-DIST_SUBDIRS = extras third-party libtransmission utils daemon cli gtk \
+DIST_SUBDIRS = extras third-party libtransmission daemon cli gtk \
 	po macosx web
 am__DIST_COMMON = $(srcdir)/Makefile.in \
 	$(srcdir)/transmission-gtk.spec.in \
@@ -421,7 +421,6 @@ SUBDIRS = \
   extras \
   third-party \
   libtransmission \
-  utils \
   $(DAEMON_DIR) \
   $(CLI_DIR) \
   $(GTK_DIR) \
