@@ -588,7 +588,7 @@ daemon_start (void * raw_arg,
     }
 
 #ifdef HAVE_SYSLOG
-    if (!foreground)
+    /* if (!foreground) */
         openlog (MY_NAME, LOG_CONS|LOG_PID, LOG_DAEMON);
 #endif
 
@@ -637,7 +637,7 @@ cleanup:
 
     /* shutdown */
 #ifdef HAVE_SYSLOG
-    if (!foreground)
+    /* if (!foreground) */
     {
         syslog (LOG_INFO, "%s", "Closing session");
         closelog ();
@@ -685,8 +685,9 @@ tr_main (int    argc,
     if (!parse_args (argc, (const char**) argv, settings, &arg.paused, &dumpSettings, &foreground, &ret))
         goto cleanup;
 
-    if (foreground && logfile == TR_BAD_SYS_FILE)
+   /* if (foreground && logfile == TR_BAD_SYS_FILE)
         logfile = tr_sys_file_get_std (TR_STD_SYS_FILE_ERR, NULL);
+    */
 
     if (!loaded)
     {
