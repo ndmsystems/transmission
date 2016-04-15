@@ -5,6 +5,18 @@
  * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  */
 
+function _n(num, id) {
+    num %= 100;
+    if (num > 19 || num < 5)
+        switch (num % 10) {
+            case 1: return id[0];
+            case 2:
+            case 3:
+            case 4: return id[1];
+        }
+    return id[2];
+}
+
 Transmission.fmt = (function()
 {
         var speed_K = 1000;

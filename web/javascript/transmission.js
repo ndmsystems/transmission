@@ -1056,7 +1056,7 @@ Transmission.prototype =
                 {
                         var torrent = torrents[0],
                             header = 'Удалить ' + torrent.getName() + '?',
-                            message = ''Для возможности продолжения обмена требуется торрент-файл. Вы уверены, что хотите его удалить?';
+                            message = 'Для возможности продолжения обмена требуется торрент-файл. Вы уверены, что хотите его удалить?';
                         dialog.confirm(header, message, 'Удалить', function() {
                                 transmission.removeTorrents(torrents);
                         });
