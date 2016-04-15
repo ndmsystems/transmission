@@ -922,6 +922,9 @@ tr_session* tr_ctorGetSession(tr_ctor const* ctor);
            or NULL if tr_ctorSetMetainfoFromFile() wasn't used */
 char const* tr_ctorGetSourceFile(tr_ctor const* ctor);
 
+/** @mcmcc Set Seed Mode */
+void tr_ctorSetSeedMode(tr_session* session, bool Mode);
+
 typedef enum
 {
     TR_PARSE_OK,

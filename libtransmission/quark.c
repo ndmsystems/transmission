@@ -314,6 +314,7 @@ static struct tr_key_struct const my_static[] =
     Q("secondsActive"),
     Q("secondsDownloading"),
     Q("secondsSeeding"),
+    Q("seed-mode"),
     Q("seed-queue-enabled"),
     Q("seed-queue-size"),
     Q("seedIdleLimit"),

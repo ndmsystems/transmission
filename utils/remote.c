@@ -351,6 +351,7 @@ static tr_option opts[] =
     { 941, "peer-info", "List the current torrent(s)' peers", "pi", false, NULL },
     { 500, "sequential-download", "Download pieces sequentialy", "seq", false, NULL },
     { 501, "random-download", "Download pieces randomly (default)", "rnd", false, NULL },
+    { 'z', "seed-mode", "Seed Mode skip verify", "z", false, NULL },
     { 0, NULL, NULL, NULL, false, NULL }
 };
 
@@ -407,6 +408,7 @@ static int getOptMode(int val)
     case 820: /* UseSSL */
     case 't': /* set current torrent */
     case 'V': /* show version number */
+    case 'z':
         return 0;
 
     case 'c': /* incomplete-dir */
@@ -2351,6 +2353,19 @@ static int processArgs(char const* rpcurl, int argc, char const* const* argv)
             case 'V': /* show version number */
                 fprintf(stderr, "%s %s\n", MY_NAME, LONG_VERSION_STRING);
                 exit(0);
+                break;
+
+            case 'z':
+                if (tadd)
+                {
+                    tr_variant* args = tr_variantDictFind(tadd, ARGUMENTS);
+                    tr_variantDictAddBool(args, TR_KEY_seed_mode, true);
+                }
+                else
+                {
+                    fprintf(stderr, "Unknown option: %s\n", optarg);
+                    status |= EXIT_FAILURE;
+                }
                 break;
 
             case TR_OPT_ERR:

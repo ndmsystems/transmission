@@ -1889,6 +1889,11 @@ static char const* torrentAdd(tr_session* session, tr_variant* args_in, tr_varia
         tr_ctorSetPaused(ctor, TR_FORCE, boolVal);
     }
 
+    if (tr_variantDictFindBool(args_in, TR_KEY_seed_mode, &boolVal))
+    {
+        tr_ctorSetSeedMode(session, boolVal);
+    }
+
     if (tr_variantDictFindInt(args_in, TR_KEY_peer_limit, &i))
     {
         tr_ctorSetPeerLimit(ctor, TR_FORCE, i);

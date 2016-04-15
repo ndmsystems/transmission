@@ -1112,12 +1112,14 @@ Transmission.prototype = {
         var fileInput = $('input#torrent_upload_file');
         var folderInput = $('input#add-dialog-folder-input');
         var startInput = $('input#torrent_auto_start');
+        var seedInput = $('input#torrent_seed_mode');
         var urlInput = $('input#torrent_upload_url');
 
         if (!confirmed) {
             // update the upload dialog's fields
             fileInput.attr('value', '');
             urlInput.attr('value', '');
+            seedInput.prop('checked', false);
             startInput.attr('checked', this.shouldAddedTorrentsStart());
             folderInput.attr('value', $("#download-dir").val());
             folderInput.change($.proxy(this.updateFreeSpaceInAddDialog, this));
@@ -1129,6 +1131,7 @@ Transmission.prototype = {
         } else {
             var paused = !startInput.is(':checked');
             var destination = folderInput.val();
+            var seed_mode = seedInput.is(':checked'),
             var remote = this.remote;
 
             jQuery.each(fileInput[0].files, function (i, file) {
@@ -1144,7 +1147,8 @@ Transmission.prototype = {
                             arguments: {
                                 'paused': paused,
                                 'download-dir': destination,
-                                'metainfo': metainfo
+                                'metainfo': metainfo,
+                                'seed-mode': seed_mode
                             }
                         };
                         remote.sendRequest(o, function (response) {
@@ -1166,7 +1170,8 @@ Transmission.prototype = {
                     arguments: {
                         'paused': paused,
                         'download-dir': destination,
-                        'filename': url
+                        'filename': url,
+                        'seed-mode': seed_mode
                     }
                 };
                 remote.sendRequest(o, function (response) {
@@ -1175,6 +1180,7 @@ Transmission.prototype = {
                     };
                 });
             }
+            seedInput.prop('checked', false);
         }
     },
 

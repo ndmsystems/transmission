@@ -30,6 +30,9 @@ enum
     MSEC_TO_SLEEP_PER_SECOND_DURING_VERIFY = 100
 };
 
+/* Add Seed Mode - Skip Verify, McMCC, 12022015 */
+static bool SkipVerifyTorrent(tr_torrent* tor);
+
 static bool verifyTorrent(tr_torrent* tor, bool* stopFlag)
 {
     time_t end;
@@ -45,7 +48,15 @@ static bool verifyTorrent(tr_torrent* tor, bool* stopFlag)
     tr_piece_index_t pieceIndex = 0;
     time_t const begin = tr_time();
     size_t const buflen = 1024 * 128; /* 128 KiB buffer */
-    uint8_t* buffer = tr_valloc(buflen);
+    uint8_t* buffer = NULL;
+
+    if (SkipVerifyTorrent(tor))
+    {
+        changed = 1;
+        goto seed_mode;
+    }
+
+    buffer = tr_valloc(buflen);
 
     sha = tr_sha1_init();
 
@@ -156,6 +167,7 @@ static bool verifyTorrent(tr_torrent* tor, bool* stopFlag)
     tr_sha1_final(sha, NULL);
     free(buffer);
 
+seed_mode:
     /* stopwatch */
     end = tr_time();
     tr_logAddTorDbg(tor, "Verification is done. It took %d seconds to verify %" PRIu64 " bytes (%" PRIu64 " bytes per second)",
@@ -342,4 +354,29 @@ void tr_verifyClose(tr_session* session UNUSED)
     tr_list_free(&verifyList, tr_free);
 
     tr_lockUnlock(getVerifyLock());
+}
+
+static bool SkipVerifyTorrent(tr_torrent* tor)
+{
+    tr_piece_index_t pieceIndex;
+
+    TR_ASSERT(tr_isTorrent(tor));
+
+    if (tor->session->SeedMode)
+    {
+        tr_logAddTorDbg(tor, "%s", "Seed Mode - Skip Verify!");
+        tr_torrentSetChecked(tor, tr_time());
+
+        for (pieceIndex = 0; pieceIndex < tor->info.pieceCount; pieceIndex++)
+        {
+            tr_torrentSetPieceChecked(tor, pieceIndex);
+            tr_torrentSetHasPiece(tor, pieceIndex, true);
+        }
+
+        tor->anyDate = tr_time();
+        tor->session->SeedMode = false;
+        return true;
+    }
+
+    return false;
 }

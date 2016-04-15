@@ -235,6 +235,8 @@ struct tr_session
     struct tr_bindinfo* public_ipv4;
     struct tr_bindinfo* public_ipv6;
 
+    bool SeedMode;
+
 #ifdef HAVE_NDM
     struct ndm_dlist_entry_t cached_accounts;
     struct ndm_core_event_connection_t* ndm_cconn;

@@ -314,6 +314,7 @@ enum
     TR_KEY_secondsActive,
     TR_KEY_secondsDownloading,
     TR_KEY_secondsSeeding,
+    TR_KEY_seed_mode,
     TR_KEY_seed_queue_enabled,
     TR_KEY_seed_queue_size,
     TR_KEY_seedIdleLimit,
