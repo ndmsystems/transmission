@@ -717,7 +717,7 @@ static int daemon_start(void* raw_arg, bool foreground UNUSED)
     }
 
 #ifdef HAVE_SYSLOG
-    openlog(MY_NAME, LOG_CONS | LOG_PID, LOG_DAEMON);
+    openlog(MY_NAME, LOG_CONS, LOG_DAEMON);
 #endif
 
     /* Create new timer event to report daemon status */
