@@ -644,7 +644,7 @@ main (int argc, char ** argv)
 
 #ifdef HAVE_SYSLOG
     /* if (!foreground) */
-        openlog (MY_NAME, LOG_CONS|LOG_PID, LOG_DAEMON);
+        openlog (MY_NAME, LOG_CONS, LOG_DAEMON);
 #endif
 
     /* Create new timer event to report daemon status */
