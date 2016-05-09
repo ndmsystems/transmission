@@ -22,6 +22,10 @@
  #include <unistd.h> /* getpid */
 #endif
 
+#ifdef HAVE_LIBFATALSIG
+#include <fatalsig.h>
+#endif
+
 #include <event2/event.h>
 
 #include <libtransmission/transmission.h>
@@ -754,6 +758,14 @@ tr_main (int    argc,
         tr_free (str);
         goto cleanup;
     }
+
+#ifdef HAVE_LIBFATALSIG
+    if (fatalsig_init () != 0)
+    {
+        printMessage (logfile, TR_LOG_ERROR, MY_NAME, "Failed to setup signal handlers -- exiting.", __FILE__, __LINE__);
+        goto cleanup;
+    }
+#endif
 
     if (!dtr_daemon (&cb, &arg, foreground, &ret, &error))
     {
