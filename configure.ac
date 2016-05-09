@@ -190,6 +190,21 @@ AS_IF([test "x$USE_SYSTEMD_DAEMON" != "xno"], [
 
 dnl ----------------------------------------------------------------------------
 dnl
+dnl fatal signal handling for debugging
+
+AC_ARG_WITH([libfatalsig], AS_HELP_STRING([--with-libfatalsig],
+            [Use libfatalsig to log a fatal signal backtrace on a crash]),
+            [use_libfatalsig=yes], [use_libfatalsig=no])
+AS_IF([test "x$use_libfatalsig" != "xno"], [
+    AC_SEARCH_LIBS([fatalsig_init], [fatalsig],
+        [AC_DEFINE([HAVE_LIBFATALSIG],1,[Use fatal signal backtrace logging])],
+        [AC_MSG_ERROR([libfatalsig support requested, but library not found.])]
+    )
+])
+
+
+dnl ----------------------------------------------------------------------------
+dnl
 dnl  dht
 
 DHT_CFLAGS="-I\$(top_srcdir)/third-party/dht"
@@ -493,7 +508,6 @@ AC_ARG_ENABLE([daemon],
               [build_daemon="yes"])
 AM_CONDITIONAL([BUILD_DAEMON],[test "x$build_daemon" = "xyes"])
 
-
 if test "x$build_mac" = "xyes" ; then
    AC_DEFINE([BUILD_MAC_CLIENT], 1)
     # Make sure the proper Mac SDK is installed
@@ -562,6 +576,7 @@ Configuration:
    Build libtransmission:                             yes
       * optimized for low-resource systems:           ${enable_lightweight}
       * µTP enabled:                                  ${build_utp}
+      * libfatalsig used:                             ${use_libfatalsig}
 
    Build Command-Line client:                         ${build_cli}
 

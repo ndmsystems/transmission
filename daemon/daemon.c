@@ -19,6 +19,10 @@
 #endif
 #include <unistd.h> /* daemon */
 
+#ifdef HAVE_LIBFATALSIG
+#include <fatalsig.h>
+#endif
+
 #include <event2/buffer.h>
 #include <event2/event.h>
 
@@ -561,6 +565,14 @@ main (int argc, char ** argv)
         tr_free (str);
         return 0;
     }
+
+#ifdef HAVE_LIBFATALSIG
+    if (fatalsig_init () != 0)
+    {
+        printMessage (logfile, TR_LOG_ERROR, MY_NAME, "Failed to setup signal handlers -- exiting.", __FILE__, __LINE__);
+        goto cleanup;
+    }
+#endif
 
     if (!foreground && tr_daemon (true, false) < 0)
     {
