@@ -62,7 +62,7 @@
 enum
 {
 #ifdef TR_LIGHTWEIGHT
-  DEFAULT_CACHE_SIZE_MB = 1,
+  DEFAULT_CACHE_SIZE_MB = NDM_CACHE_SIZE_MB,
   DEFAULT_PREFETCH_ENABLED = false,
 #else
   DEFAULT_CACHE_SIZE_MB = 4,
@@ -335,7 +335,7 @@ tr_sessionGetDefaultSettings (tr_variant * d)
   tr_variantDictAddInt  (d, TR_KEY_message_level,                   TR_LOG_INFO);
   tr_variantDictAddInt  (d, TR_KEY_download_queue_size,             5);
   tr_variantDictAddBool (d, TR_KEY_download_queue_enabled,          true);
-  tr_variantDictAddInt  (d, TR_KEY_peer_limit_global,               atoi (TR_DEFAULT_PEER_LIMIT_GLOBAL_STR));
+  tr_variantDictAddInt  (d, TR_KEY_peer_limit_global,               TR_MAX_PEERS_COUNT);
   tr_variantDictAddInt  (d, TR_KEY_peer_limit_per_torrent,          atoi (TR_DEFAULT_PEER_LIMIT_TORRENT_STR));
   tr_variantDictAddInt  (d, TR_KEY_peer_port,                       atoi (TR_DEFAULT_PEER_PORT_STR));
   tr_variantDictAddBool (d, TR_KEY_peer_port_random_on_start,       false);
@@ -374,7 +374,7 @@ tr_sessionGetDefaultSettings (tr_variant * d)
   tr_variantDictAddInt  (d, TR_KEY_alt_speed_time_end,              1020); /* 5pm */
   tr_variantDictAddInt  (d, TR_KEY_alt_speed_time_day,              TR_SCHED_ALL);
   tr_variantDictAddInt  (d, TR_KEY_speed_limit_up,                  TR_MAX_SPEED_KB);
-  tr_variantDictAddBool (d, TR_KEY_speed_limit_up_enabled,          false);
+  tr_variantDictAddBool (d, TR_KEY_speed_limit_up_enabled,          true);
   tr_variantDictAddInt  (d, TR_KEY_umask,                           022);
   tr_variantDictAddInt  (d, TR_KEY_upload_slots_per_torrent,        14);
   tr_variantDictAddStr  (d, TR_KEY_bind_address_ipv4,               TR_DEFAULT_BIND_ADDRESS_IPV4);
@@ -1436,6 +1436,9 @@ tr_sessionSetSpeedLimit_Bps (tr_session * s, tr_direction d, unsigned int Bps)
 void
 tr_sessionSetSpeedLimit_KBps (tr_session * s, tr_direction d, unsigned int KBps)
 {
+  if (KBps > TR_MAX_SPEED_KB)
+    KBps = TR_MAX_SPEED_KB;
+
   tr_sessionSetSpeedLimit_Bps (s, d, toSpeedBytes (KBps));
 }
 
@@ -1460,7 +1463,7 @@ tr_sessionLimitSpeed (tr_session * s, tr_direction d, bool b)
   assert (tr_isDirection (d));
   assert (tr_isBool (b));
 
-  s->speedLimitEnabled[d] = b;
+  s->speedLimitEnabled[d] = true;
 
   updateBandwidth (s, d);
 }

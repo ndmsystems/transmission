@@ -120,8 +120,51 @@ const char* tr_getDefaultConfigDir (const char * appname);
 const char* tr_getDefaultDownloadDir (void);
 
 /* NDM internal limits */
+
+#if defined __KURD__
+
+#define TR_MAX_SPEED_KB                    (1024*10)
+#define TR_MAX_PEERS_COUNT                       160
+#define NDM_CACHE_SIZE_MB                          2
+
+#elif defined __KNGRE__
+
+#define TR_MAX_SPEED_KB                     (1024*7)
+#define TR_MAX_PEERS_COUNT                       160
+#define NDM_CACHE_SIZE_MB                          2
+
+#elif defined __KNGRC__ || defined __KURC__ //MT7620 128M RAM
+
+#define TR_MAX_SPEED_KB                     (1024*4)
+#define TR_MAX_PEERS_COUNT                       120
+#define NDM_CACHE_SIZE_MB                          1
+
+#elif defined __MT76XX__
+
+#define TR_MAX_SPEED_KB                     (1024*3)
+#define TR_MAX_PEERS_COUNT                        80
+#define NDM_CACHE_SIZE_MB                          1
+
+#elif defined __MT7628__
+
+#define TR_MAX_SPEED_KB                     (1024*3)
+#define TR_MAX_PEERS_COUNT                        80
+#define NDM_CACHE_SIZE_MB                          1
+
+#elif defined __RT6XXX__ || defined __RT63XXX__
+
 #define TR_MAX_SPEED_KB                     (1024*5)
-#define TR_MAX_PEERS_COUNT                       300
+#define TR_MAX_PEERS_COUNT                       160
+#define NDM_CACHE_SIZE_MB                          2
+
+#else
+
+#define TR_MAX_SPEED_KB                     (1024*3)
+#define TR_MAX_PEERS_COUNT                        80
+#define NDM_CACHE_SIZE_MB                          1
+
+#endif
+
 /* NDM internal limits end */
 
 #define TR_DEFAULT_BIND_ADDRESS_IPV4        "0.0.0.0"
