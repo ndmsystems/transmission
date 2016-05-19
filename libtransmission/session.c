@@ -1491,6 +1491,9 @@ tr_sessionSetAltSpeed_Bps (tr_session * s, tr_direction d, unsigned int Bps)
 void
 tr_sessionSetAltSpeed_KBps (tr_session * s, tr_direction d, unsigned int KBps)
 {
+  if (KBps > TR_MAX_SPEED_KB)
+    KBps = TR_MAX_SPEED_KB;
+
   tr_sessionSetAltSpeed_Bps (s, d, toSpeedBytes (KBps));
 }
 
@@ -1668,6 +1671,9 @@ void
 tr_sessionSetPeerLimitPerTorrent (tr_session  * session, uint16_t n)
 {
     assert (tr_isSession (session));
+
+    if (n > TR_MAX_PEERS_COUNT)
+       n = TR_MAX_PEERS_COUNT;
 
     session->peerLimitPerTorrent = n;
 }
