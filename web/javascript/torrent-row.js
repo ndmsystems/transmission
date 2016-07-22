@@ -164,9 +164,9 @@ TorrentRendererFull.prototype =
 			if (webseed_count && peer_count)
 			{
 				// Downloading from 2 of 3 peer(s) and 2 webseed(s)
-				return [ 'Загрузка',
+				return [ 'Загрузка от',
 				         t.getPeersSendingToUs(),
-				         'от',
+				         'из',
 				         fmt.countString('участника','участников',peer_count),
 				         'и',
 				         fmt.countString('web seed','web seeds',webseed_count),
@@ -177,7 +177,7 @@ TorrentRendererFull.prototype =
 			else if (webseed_count)
 			{
 				// Downloading from 2 webseed(s)
-				return [ 'Загрузка',
+				return [ 'Загрузка от',
 				         fmt.countString('web seed','web seeds',webseed_count),
 				         '-',
 				         TorrentRendererHelper.formatDL(t),
@@ -186,9 +186,9 @@ TorrentRendererFull.prototype =
 			else
 			{
 				// Downloading from 2 of 3 peer(s)
-				return [ 'Загрузка',
+				return [ 'Загрузка от',
 				         t.getPeersSendingToUs(),
-				         'от',
+				         'из',
 				          fmt.countString('участника','участников',peer_count),
 				         '-',
 				         TorrentRendererHelper.formatDL(t),
