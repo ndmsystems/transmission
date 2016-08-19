@@ -570,7 +570,7 @@ main (int argc, char ** argv)
     if (fatalsig_init () != 0)
     {
         printMessage (logfile, TR_LOG_ERROR, MY_NAME, "Failed to setup signal handlers -- exiting.", __FILE__, __LINE__);
-        goto cleanup;
+        return -1;
     }
 #endif
 
