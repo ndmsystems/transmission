@@ -54,7 +54,7 @@
 # define NDM_LOCAL_USERNAME_SIZE_   32
 # define NDM_LOCAL_PASSWORD_SIZE_   32
 
-#else /* } HAVE_NDM { */
+#endif /* } HAVE_NDM */
 
 /* session-id is used to make cross-site request forgery attacks difficult.
  * Don't disable this feature unless you really know what you're doing!
@@ -62,8 +62,6 @@
  * http://shiflett.org/articles/cross-site-request-forgeries
  * http://www.webappsec.org/lists/websecurity/archive/2008-04/msg00037.html */
 #define REQUIRE_SESSION_ID
-
-#endif /* } HAVE_NDM */
 
 #define MY_NAME "RPC Server"
 #define MY_REALM "Transmission"
@@ -834,11 +832,12 @@ startServer (void * vserver)
       evhttp_bind_socket (server->httpd, tr_address_to_string (&addr), server->port);
       evhttp_set_gencb (server->httpd, handle_request, server);
     }
-
+#ifdef HAVE_NDM
   server->core = ndm_core_open (
     "transmission/ci",
     NDM_LOCAL_AUTH_TIMEOUT_,
     NDM_CORE_CACHE_MAX_SIZE_);
+#endif
 }
 
 static void
@@ -849,8 +848,9 @@ stopServer (tr_rpc_server * server)
       evhttp_free (server->httpd);
       server->httpd = NULL;
     }
-
+#ifdef HAVE_NDM
   ndm_core_close (&server->core);
+#endif
 }
 
 static void
