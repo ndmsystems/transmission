@@ -54,7 +54,7 @@
 # define NDM_LOCAL_USERNAME_SIZE_   32
 # define NDM_LOCAL_PASSWORD_SIZE_   32
 
-#endif /* } HAVE_NDM */
+#else /* } HAVE_NDM { */
 
 /* session-id is used to make cross-site request forgery attacks difficult.
  * Don't disable this feature unless you really know what you're doing!
@@ -62,6 +62,8 @@
  * http://shiflett.org/articles/cross-site-request-forgeries
  * http://www.webappsec.org/lists/websecurity/archive/2008-04/msg00037.html */
 #define REQUIRE_SESSION_ID
+
+#endif /* } HAVE_NDM */
 
 #define MY_NAME "RPC Server"
 #define MY_REALM "Transmission"
