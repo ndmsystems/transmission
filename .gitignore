@@ -1,0 +1,16 @@
+*.o
+.built*
+.configured_*
+.dep_files
+.prepared_*
+Makefile
+*.a
+ipkg-*
+config.log
+config.rpath
+config.status
+autom4te.cache
+ABOUT-NLS
+daemon/transmission-daemon
+daemon/transmission-remote
+libtool
