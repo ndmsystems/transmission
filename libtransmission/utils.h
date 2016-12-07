@@ -68,6 +68,14 @@ extern "C" {
  #define TR_GNUC_MALLOC
 #endif
 
+#ifdef __UCLIBC__
+#define TR_UCLIBC_CHECK_VERSION(major,minor,micro) \
+  (__UCLIBC_MAJOR__ > (major) || \
+   (__UCLIBC_MAJOR__ == (major) && __UCLIBC_MINOR__ > (minor)) || \
+   (__UCLIBC_MAJOR__ == (major) && __UCLIBC_MINOR__ == (minor) && \
+      __UCLIBC_SUBLEVEL__ >= (micro)))
+#endif
+
 
 /***
 ****
