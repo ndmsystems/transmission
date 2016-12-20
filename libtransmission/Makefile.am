@@ -60,6 +60,7 @@ libtransmission_a_SOURCES = \
   tr-udp.c \
   tr-utp.c \
   tr-getopt.c \
+  transmission.c \
   trevent.c \
   upnp.c \
   utils.c \

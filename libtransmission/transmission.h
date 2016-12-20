@@ -125,6 +125,20 @@ tr_encryption_mode;
 ***/
 
 /**
+ * @brief Initialize the library.
+ *
+ * The function should be called before any other library function.
+ */
+bool tr_libraryInit (void);
+
+/**
+ * @brief Free library resources allocated with tr_libraryInit ().
+ *
+ * The function should be called after any other library function.
+ */
+void tr_libraryFree (void);
+
+/**
  * @addtogroup tr_session Session
  *
  * A libtransmission session is created by calling tr_sessionInit ().

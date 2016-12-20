@@ -10,6 +10,7 @@
 #ifndef TR_UTILS_H
 #define TR_UTILS_H 1
 
+#include <stdbool.h>
 #include <inttypes.h>
 #include <stddef.h> /* size_t */
 #include <time.h> /* time_t */

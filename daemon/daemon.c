@@ -558,6 +558,12 @@ main (int argc, char ** argv)
         return -1;
     }
 
+    if (!tr_libraryInit ())
+    {
+        printMessage (logfile, TR_LOG_ERROR, MY_NAME, "Unable to initialize the torrent library -- exiting.", __FILE__, __LINE__);
+        return -1;
+    }
+
     if (dumpSettings)
     {
         char * str = tr_variantToStr (&settings, TR_VARIANT_FMT_JSON, NULL);
@@ -730,6 +736,7 @@ cleanup:
     if (pidfile_created)
         tr_remove (pid_filename);
     tr_variantFree (&settings);
+    tr_libraryFree ();
     sd_notify (0, "STATUS=\n");
     return 0;
 }
