@@ -29,6 +29,20 @@ enum
   KEY_LEN = 96
 };
 
+/**
+ * @brief Initialize the crypto subsystem.
+ *
+ * The function should be called before any other subsystem function.
+ */
+bool tr_cryptoInit (void);
+
+/**
+ * @brief Free library resources allocated with tr_cryptoInit ().
+ *
+ * The function should be called after any other subsystem function.
+ */
+void tr_cryptoFree (void);
+
 /** @brief Holds state information for encrypted peer communications */
 typedef struct
 {

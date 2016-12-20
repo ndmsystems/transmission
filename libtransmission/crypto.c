@@ -10,10 +10,98 @@
 #include <assert.h>
 #include <string.h> /* memcpy (), memmove (), memset () */
 
+#include <openssl/bn.h>
+#include <openssl/dh.h>
+#include <openssl/err.h>
+#include <openssl/rc4.h>
+#include <openssl/sha.h>
+#include <openssl/rand.h>
+#include <openssl/ssl.h>
+#include <openssl/crypto.h>
+#include <openssl/opensslv.h>
+#include <openssl/opensslconf.h>
+
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+#if defined(OPENSSL_THREADS)
+#define OPENSSL_LOCK_HOOKS
+
+#include "session.h"
+#include "platform.h"
+
+static struct tr_lock ** locks;
+
+static void
+tr_cryptoLockingCallback (int mode, int type, const char * file, int line)
+{
+  if (mode & CRYPTO_LOCK)
+    {
+      tr_lockLock (locks[type]);
+    }
+  else
+    {
+      tr_lockUnlock (locks[type]);
+    }
+}
+
+static unsigned long
+tr_cryptoIdCallback (void)
+{
+  return (unsigned long)tr_getCurrentThread ();
+}
+#endif
+#endif
+
 #include "transmission.h"
 #include "crypto.h"
 #include "crypto-utils.h"
 #include "utils.h"
+
+#define MY_NAME "tr_crypto"
+
+/**
+***
+**/
+
+bool
+tr_cryptoInit (void)
+{
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+#ifdef OPENSSL_LOCK_HOOKS
+  size_t i;
+
+  locks = tr_malloc (sizeof (*locks)*CRYPTO_num_locks ());
+  for (i=0; i<CRYPTO_num_locks (); ++i)
+    locks[i] = tr_lockNew ();
+
+  CRYPTO_set_id_callback (tr_cryptoIdCallback);
+  CRYPTO_set_locking_callback (tr_cryptoLockingCallback);
+#endif /* #ifdef OPENSSL_LOCK_HOOKS */
+
+  ERR_load_crypto_strings ();
+#endif
+
+  return true;
+}
+
+void
+tr_cryptoFree (void)
+{
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+#ifdef OPENSSL_LOCK_HOOKS
+  size_t i;
+
+  CRYPTO_set_locking_callback (NULL);
+  CRYPTO_set_id_callback (NULL);
+
+  for (i=0; i<CRYPTO_num_locks (); ++i)
+    tr_lockFree (locks[i]);
+
+  tr_free (locks);
+#endif /* #ifdef OPENSSL_LOCK_HOOKS */
+
+  ERR_free_strings ();
+#endif
+}
 
 /**
 ***

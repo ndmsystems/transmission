@@ -41,11 +41,24 @@ const char * tr_getWebClientDir (const tr_session *);
 
 /** @} */
 
+#ifndef WIN32
+ #include <pthread.h>
+#endif
 
 /**
  * @addtogroup utils Utilities
  * @{
  */
+
+#ifdef WIN32
+typedef DWORD tr_thread_id;
+#else
+typedef pthread_t tr_thread_id;
+#endif
+
+/** @brief Return a current thread Id */
+tr_thread_id
+tr_getCurrentThread (void);
 
 typedef struct tr_thread tr_thread;
 

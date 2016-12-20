@@ -703,6 +703,7 @@ cleanup:
     if (pidfile_created)
         tr_sys_path_remove (pid_filename, NULL);
 
+    tr_libraryFree ();
     sd_notify (0, "STATUS=\n");
 
     return 0;
@@ -748,6 +749,12 @@ tr_main (int    argc,
     {
         printMessage (logfile, TR_LOG_ERROR, MY_NAME, "Error loading config file -- exiting.", __FILE__, __LINE__);
         ret = 1;
+        goto cleanup;
+    }
+
+    if (!tr_libraryInit ())
+    {
+        printMessage (logfile, TR_LOG_ERROR, MY_NAME, "Unable to initialize the torrent library -- exiting.", __FILE__, __LINE__);
         goto cleanup;
     }
 

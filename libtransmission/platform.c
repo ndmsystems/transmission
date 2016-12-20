@@ -47,29 +47,23 @@
 ****  THREADS
 ***/
 
-#ifdef _WIN32
-typedef DWORD tr_thread_id;
+static bool
+tr_areThreadsEqual (tr_thread_id a, tr_thread_id b)
+{
+#ifdef WIN32
+  return a == b;
 #else
-typedef pthread_t tr_thread_id;
+  return pthread_equal (a, b) != 0;
 #endif
+}
 
-static tr_thread_id
+tr_thread_id
 tr_getCurrentThread (void)
 {
 #ifdef _WIN32
   return GetCurrentThreadId ();
 #else
   return pthread_self ();
-#endif
-}
-
-static bool
-tr_areThreadsEqual (tr_thread_id a, tr_thread_id b)
-{
-#ifdef _WIN32
-  return a == b;
-#else
-  return pthread_equal (a, b) != 0;
 #endif
 }
 
