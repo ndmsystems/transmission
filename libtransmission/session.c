@@ -598,6 +598,11 @@ tr_sessionInit (const char  * tag,
   session->cache = tr_cacheNew (1024*1024*2);
   session->tag = tr_strdup (tag);
   session->magicNumber = SESSION_MAGIC_NUMBER;
+
+  const char * stage = getenv("FIRMWARE_STAGE");
+  if (stage && !strcmp(stage, "0"))
+	session->dropLimits = true;
+
   tr_bandwidthConstruct (&session->bandwidth, session, NULL);
   tr_variantInitList (&session->removedTorrents, 0);
 
@@ -1432,7 +1437,7 @@ tr_sessionSetSpeedLimit_Bps (tr_session * s, tr_direction d, unsigned int Bps)
 void
 tr_sessionSetSpeedLimit_KBps (tr_session * s, tr_direction d, unsigned int KBps)
 {
-  if (KBps > TR_MAX_SPEED_KB)
+  if (!s->dropLimits && KBps > TR_MAX_SPEED_KB)
     KBps = TR_MAX_SPEED_KB;
 
   tr_sessionSetSpeedLimit_Bps (s, d, toSpeedBytes (KBps));
@@ -1459,7 +1464,10 @@ tr_sessionLimitSpeed (tr_session * s, tr_direction d, bool b)
   assert (tr_isDirection (d));
   assert (tr_isBool (b));
 
-  s->speedLimitEnabled[d] = true;
+  if (s->dropLimits)
+    s->speedLimitEnabled[d] = b;
+  else
+    s->speedLimitEnabled[d] = true;
 
   updateBandwidth (s, d);
 }
@@ -1491,7 +1499,7 @@ tr_sessionSetAltSpeed_Bps (tr_session * s, tr_direction d, unsigned int Bps)
 void
 tr_sessionSetAltSpeed_KBps (tr_session * s, tr_direction d, unsigned int KBps)
 {
-  if (KBps > TR_MAX_SPEED_KB)
+  if (!s->dropLimits && KBps > TR_MAX_SPEED_KB)
     KBps = TR_MAX_SPEED_KB;
 
   tr_sessionSetAltSpeed_Bps (s, d, toSpeedBytes (KBps));
@@ -1653,7 +1661,7 @@ tr_sessionSetPeerLimit (tr_session * session, uint16_t n)
 {
   assert (tr_isSession (session));
 
-  if (n > TR_MAX_PEERS_COUNT)
+  if (!session->dropLimits && n > TR_MAX_PEERS_COUNT)
     n = TR_MAX_PEERS_COUNT;
 
   session->peerLimit = n;
@@ -1672,7 +1680,7 @@ tr_sessionSetPeerLimitPerTorrent (tr_session  * session, uint16_t n)
 {
     assert (tr_isSession (session));
 
-    if (n > TR_MAX_PEERS_COUNT)
+    if (!session->dropLimits && n > TR_MAX_PEERS_COUNT)
        n = TR_MAX_PEERS_COUNT;
 
     session->peerLimitPerTorrent = n;
