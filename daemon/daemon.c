@@ -747,9 +747,11 @@ tr_main (int    argc,
 
     if (!loaded)
     {
-        printMessage (logfile, TR_LOG_ERROR, MY_NAME, "Error loading config file -- exiting.", __FILE__, __LINE__);
+        printMessage (logfile, TR_LOG_ERROR, MY_NAME, "Error loading config file -- continue anyway.", __FILE__, __LINE__);
+	/*
         ret = 1;
         goto cleanup;
+	*/
     }
 
     if (!tr_libraryInit ())

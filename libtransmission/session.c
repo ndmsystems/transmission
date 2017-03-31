@@ -490,10 +490,9 @@ tr_sessionLoadSettings (tr_variant * dict, const char * configDir, const char * 
     }
   else
     {
-      success = TR_ERROR_IS_ENOENT (error->code);
+      success = TR_ERROR_IS_ENOENT (error->code) || error->code == EINVAL;
       tr_error_free (error);
     }
-
   /* cleanup */
   tr_free (filename);
   return success;
