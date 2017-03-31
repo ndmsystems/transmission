@@ -480,11 +480,10 @@ tr_sessionLoadSettings (tr_variant * dict, const char * configDir, const char * 
       tr_variantMergeDicts (dict, &fileSettings);
       tr_variantFree (&fileSettings);
     }
-
   /* cleanup */
   tr_variantFree (&sessionDefaults);
   tr_free (filename);
-  success = (err==0) || (err==ENOENT);
+  success = (err==0) || (err==ENOENT) || (err==EINVAL);
   return success;
 }
 

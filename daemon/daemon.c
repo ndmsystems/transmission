@@ -554,8 +554,8 @@ main (int argc, char ** argv)
 */
     if (!loaded)
     {
-        printMessage (logfile, TR_LOG_ERROR, MY_NAME, "Error loading config file -- exiting.", __FILE__, __LINE__);
-        return -1;
+        printMessage (logfile, TR_LOG_ERROR, MY_NAME, "Error loading config file --- continue anyway.", __FILE__, __LINE__);
+        //return -1;
     }
 
     if (!tr_libraryInit ())
