@@ -508,7 +508,7 @@ bool tr_sessionLoadSettings(tr_variant* dict, char const* configDir, char const*
     }
     else
     {
-        success = TR_ERROR_IS_ENOENT(error->code);
+        success = TR_ERROR_IS_ENOENT(error->code) || error->code == EINVAL;
         tr_error_free(error);
     }
 

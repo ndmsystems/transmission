@@ -861,9 +861,7 @@ static bool init_daemon_data(int argc, char* argv[], struct daemon_data* data, b
 
     if (!loaded)
     {
-        printMessage(logfile, TR_LOG_ERROR, MY_NAME, "Error loading config file -- exiting.", __FILE__, __LINE__);
-        *ret = 1;
-        goto exit_early;
+        printMessage(logfile, TR_LOG_ERROR, MY_NAME, "Error loading config file -- continue anyway.", __FILE__, __LINE__);
     }
 
     if (dumpSettings)

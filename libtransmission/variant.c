@@ -1255,13 +1255,15 @@ bool tr_variantFromFile(tr_variant* setme, tr_variant_fmt fmt, char const* filen
 
     if (buf != NULL)
     {
-        if (tr_variantFromBuf(setme, fmt, buf, buflen, filename, NULL) == 0)
+        int err;
+
+        if ((err = tr_variantFromBuf(setme, fmt, buf, buflen, filename, NULL)) == 0)
         {
             ret = true;
         }
         else
         {
-            tr_error_set_literal(error, 0, _("Unable to parse file content"));
+            tr_error_set_literal(error, err, _("Unable to parse file content"));
         }
 
         tr_free(buf);
