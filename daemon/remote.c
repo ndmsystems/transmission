@@ -310,6 +310,8 @@ static tr_option opts[] =
     { 'Y', "no-lpd",                 "Disable local peer discovery (LPD)", "Y",  0, NULL },
     { 941, "peer-info",              "List the current torrent(s)' peers", "pi",  0, NULL },
     { 'z', "seed-mode",              "Seed Mode skip verify", "z", 0, NULL },
+    { 500, "sequential-download",    "Download pieces sequentialy", "seq",  0, NULL    },
+    { 501, "random-download",        "Download pieces randomly (default)", "rnd",  0, NULL    },
     {   0, NULL,                     NULL, NULL, 0, NULL }
 };
 
@@ -415,6 +417,8 @@ getOptMode (int val)
       case 952: /* no-seedratio */
       case 984: /* honor-session */
       case 985: /* no-honor-session */
+      case 500: /* sequential-download */
+      case 501: /* random-download */
         return MODE_TORRENT_SET;
 
       case 920: /* session-info */
@@ -719,6 +723,7 @@ static const tr_quark details_keys[] = {
     TR_KEY_secondsSeeding,
     TR_KEY_seedRatioMode,
     TR_KEY_seedRatioLimit,
+    TR_KEY_sequentialDownload,
     TR_KEY_sizeWhenDone,
     TR_KEY_startDate,
     TR_KEY_status,
@@ -904,6 +909,8 @@ printDetails (tr_variant * top)
                 printf ("  Percent Done: %s%%\n", buf);
             }
 
+            if (tr_variantDictFindBool (t, TR_KEY_sequentialDownload, &boolVal))
+                printf ("  Sequential download: %s\n", (boolVal ? "Yes" : "No"));
             if (tr_variantDictFindInt (t, TR_KEY_eta, &i))
                 printf ("  ETA: %s\n", tr_strltime (buf, i, sizeof (buf)));
             if (tr_variantDictFindInt (t, TR_KEY_rateDownload, &i))
@@ -2175,6 +2182,10 @@ processArgs (const char * rpcurl, int argc, const char ** argv)
                 case 984: tr_variantDictAddBool (args, TR_KEY_honorsSessionLimits, true);
                           break;
                 case 985: tr_variantDictAddBool (args, TR_KEY_honorsSessionLimits, false);
+                          break;
+                case 500: tr_variantDictAddBool (args, TR_KEY_sequentialDownload, true);
+                          break;
+                case 501: tr_variantDictAddBool (args, TR_KEY_sequentialDownload, false);
                           break;
                 default:  assert ("unhandled value" && 0);
                           break;
