@@ -13,6 +13,9 @@
 #include <stdlib.h> /* strtol */
 #include <string.h> /* strcmp */
 
+#include <sys/types.h> /* stat (), umask () */
+#include <sys/stat.h> /* stat (), umask () */
+
 #ifdef HAVE_ZLIB
  #include <zlib.h>
 #endif
@@ -31,6 +34,9 @@
 #include "variant.h"
 #include "version.h"
 #include "web.h"
+
+#define MAJ_NONE        0
+#define MAJ_MTD         31
 
 #define RPC_VERSION     15
 #define RPC_VERSION_MIN 1
@@ -72,6 +78,33 @@ notify (tr_session * session,
                                     session->rpc_func_user_data);
 
     return status;
+}
+
+/***
+****
+***/
+
+static bool
+isValidDir (const char * dir)
+{
+  struct stat sb;
+  int maj;
+
+  if (stat (dir, &sb) || !S_ISDIR (sb.st_mode))
+    {
+      tr_logAddError (_("%s is not a directory"), dir);
+      return false;
+    }
+
+  maj = major (sb.st_dev);
+
+  if (maj == MAJ_NONE || maj == MAJ_MTD)
+    {
+      tr_logAddError (_("%s directory can not be used to download"), dir);
+      return false;
+    }
+
+  return true;
 }
 
 /***
@@ -1354,6 +1387,10 @@ torrentSetLocation (tr_session               * session,
     {
       errmsg = "no location";
     }
+  else if (!isValidDir (location))
+    {
+      errmsg = "invalid download directory";
+    }
   else
     {
       bool move = false;
@@ -1786,6 +1823,37 @@ torrentAdd (tr_session               * session,
         }
 
       dbgmsg ("torrentAdd: filename is \"%s\"", filename ? filename : " (null)");
+
+      {
+        const char * downloadDir;
+        const char * incompleteDir;
+
+        if (tr_ctorGetDownloadDir (ctor, TR_FORCE, &downloadDir))
+          {
+            tr_ctorFree (ctor);
+            return "no download directory specified";
+          }
+
+        if (!isValidDir (downloadDir))
+          {
+            tr_ctorFree (ctor);
+            return "invalid download directory";
+          }
+
+        if (tr_ctorGetIncompleteDir (ctor, &incompleteDir))
+          {
+            if (downloadDir == NULL)
+              {
+                tr_ctorFree (ctor);
+                return "no incomplete directory specified";
+              }
+          }
+        else if (!isValidDir (incompleteDir))
+          {
+            tr_ctorFree (ctor);
+            return "invalid incomplete directory";
+          }
+      }
 
       if (isCurlURL (filename))
         {
@@ -2267,7 +2335,9 @@ request_exec (tr_session             * session,
       data->args_out = tr_variantDictAddDict (data->response, TR_KEY_arguments, 0);
       data->callback = callback;
       data->callback_user_data = callback_user_data;
-      (*methods[i].func)(session, args_in, data->args_out, data);
+      result = (*methods[i].func)(session, args_in, data->args_out, data);
+      if (result != NULL)
+        tr_idle_function_done (data, result);
     }
 }
 
