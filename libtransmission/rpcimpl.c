@@ -12,6 +12,9 @@
 #include <string.h> /* strcmp */
 
 #include <zlib.h>
+#include <sys/types.h> /* stat (), umask () */
+#include <sys/stat.h> /* stat (), umask () */
+#include <sys/sysmacros.h>
 
 #include <event2/buffer.h>
 
@@ -34,6 +37,9 @@
 #include "variant.h"
 #include "version.h"
 #include "web.h"
+
+#define MAJ_NONE 0
+#define MAJ_MTD 31
 
 #define RPC_VERSION 16
 #define RPC_VERSION_MIN 1
@@ -67,6 +73,87 @@ static tr_rpc_callback_status notify(tr_session* session, int type, tr_torrent* 
     }
 
     return status;
+}
+
+/***
+****
+***/
+
+static const char* dirType(const unsigned int depth)
+{
+    if (!depth)
+    {
+        return "";
+    }
+
+    return "parent ";
+}
+
+static bool isValidDir(const char* dir, const unsigned int depth)
+{
+    struct stat sb;
+    int maj;
+
+    if (stat(dir, &sb))
+    {
+        const char* delim;
+        char* subdir;
+        bool valid;
+
+        if (errno != ENOENT)
+        {
+            tr_logAddError(_("unable to get %s %sdirectory information: %s"), dir, dirType(depth), tr_strerror(errno));
+            return false;
+        }
+
+        delim = strrchr(dir, '/');
+        if (!delim)
+        {
+            tr_logAddError(_("%s is not a %sdirectory"), dir, dirType(depth));
+            return false;
+        }
+
+        if (delim <= dir)
+        {
+            tr_logAddError(_("%s is not a valid %sdirectory to download"), dir, dirType(depth));
+            return false;
+        }
+
+        subdir = tr_strndup(dir, delim - dir);
+        if (!subdir)
+        {
+            tr_logAddError(_("unable to get a parent directory of %s: out of memory"), dir);
+            return false;
+        }
+
+        valid = isValidDir(subdir, depth + 1);
+        tr_free(subdir);
+        return valid;
+    }
+
+    if (!S_ISDIR(sb.st_mode))
+    {
+        tr_logAddError(_("%s is not a %sdirectory"), dir, dirType(depth));
+        return false;
+    }
+
+    maj = major(sb.st_dev);
+
+    if (maj == MAJ_NONE || maj == MAJ_MTD)
+    {
+        if (!depth)
+        {
+            tr_logAddError(_("%s directory can not be used to download"), dir);
+        }
+        else
+        {
+            tr_logAddError(_("%s parent directory can not be used to create new download directories"), dir);
+        }
+
+        return false;
+    }
+
+    return true;
 }
 
 /***
@@ -1504,6 +1591,11 @@ static char const* torrentSetLocation(tr_session* session, tr_variant* args_in, 
         return "new location path is not absolute";
     }
 
+    if (!isValidDir(location, 0))
+    {
+        return "invalid download directory";
+    }
+
     bool move;
     int torrentCount;
     tr_torrent** torrents = getTorrents(session, args_in, &torrentCount);
@@ -1863,10 +1955,15 @@ static char const* torrentAdd(tr_session* session, tr_variant* args_in, tr_varia
 
     if (tr_variantDictFindStr(args_in, TR_KEY_download_dir, &download_dir, NULL))
     {
-        if (tr_sys_path_is_relative(download_dir))
+        if (download_dir[0] == '\0')
         {
-            return "download directory path is not absolute";
+            download_dir = NULL;
         }
+    }
+
+    if (download_dir && tr_sys_path_is_relative(download_dir))
+    {
+        return "download directory path is not absolute";
     }
 
     int64_t i;
@@ -1946,6 +2043,26 @@ static char const* torrentAdd(tr_session* session, tr_variant* args_in, tr_varia
 
     dbgmsg("torrentAdd: filename is \"%s\"", filename ? filename : " (null)");
 
+    if (download_dir == NULL && !tr_ctorGetDownloadDir(ctor, TR_FALLBACK, &download_dir))
+    {
+        tr_ctorFree(ctor);
+        return "no download directory specified";
+    }
+
+    if (!isValidDir(download_dir, 0))
+    {
+        tr_ctorFree(ctor);
+        return "invalid download directory";
+    }
+
+    const char* incomplete_dir = NULL;
+
+    if (tr_ctorGetIncompleteDir(ctor, &incomplete_dir) && !isValidDir(incomplete_dir, 0))
+    {
+        tr_ctorFree(ctor);
+        return "invalid incomplete directory";
+    }
+
     if (isCurlURL(filename))
     {
         struct add_torrent_idle_data* d = tr_new0(struct add_torrent_idle_data, 1);
@@ -1999,6 +2116,11 @@ static char const* sessionSet(tr_session* session, tr_variant* args_in, tr_varia
         {
             return "download directory path is not absolute";
         }
+
+        if (!isValidDir(download_dir, 0))
+        {
+            return "invalid download directory";
+        }
     }
 
     if (tr_variantDictFindStr(args_in, TR_KEY_incomplete_dir, &incomplete_dir, NULL))
@@ -2006,6 +2128,11 @@ static char const* sessionSet(tr_session* session, tr_variant* args_in, tr_varia
         if (tr_sys_path_is_relative(incomplete_dir))
         {
             return "incomplete torrents directory path is not absolute";
+        }
+
+        if (!isValidDir(incomplete_dir, 0))
+        {
+            return "invalid incomplete directory";
         }
     }
 
