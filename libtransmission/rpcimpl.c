@@ -84,15 +84,62 @@ notify (tr_session * session,
 ****
 ***/
 
+static const char *
+dirType (const unsigned int depth)
+{
+  if (!depth)
+    return "";
+  return "parent ";
+}
+
 static bool
-isValidDir (const char * dir)
+isValidDir (const char * dir, const unsigned int depth)
 {
   struct stat sb;
   int maj;
 
-  if (stat (dir, &sb) || !S_ISDIR (sb.st_mode))
+  if (stat (dir, &sb))
     {
-      tr_logAddError (_("%s is not a directory"), dir);
+      const char * delim;
+      const char * subdir;
+      bool valid;
+
+      if (errno != ENOENT)
+        {
+          tr_logAddError (_("unable to get %s %sdirectory information: %s"),
+                          dir, dirType (depth), tr_strerror (errno));
+          return false;
+        }
+
+      delim = strrchr (dir, '/');
+      if (!delim)
+        {
+          tr_logAddError (_("%s is not a %sdirectory"), dir, dirType (depth));
+          return false;
+        }
+
+      if (delim <= dir)
+        {
+          tr_logAddError (_("%s is not a valid %sdirectory to download"),
+                          dir, dirType (depth));
+          return false;
+        }
+
+      subdir = tr_strndup (dir, delim - dir);
+      if (!subdir)
+        {
+          tr_logAddError (_("unable to get a parent directory of %s: out of memory"), dir);
+          return false;
+        }
+
+      valid = isValidDir (subdir, depth + 1);
+      tr_free (subdir);
+      return valid;
+    }
+
+  if (!S_ISDIR (sb.st_mode))
+    {
+      tr_logAddError (_("%s is not a %sdirectory"), dir, dirType (depth));
       return false;
     }
 
@@ -100,7 +147,10 @@ isValidDir (const char * dir)
 
   if (maj == MAJ_NONE || maj == MAJ_MTD)
     {
-      tr_logAddError (_("%s directory can not be used to download"), dir);
+      if (!depth)
+        tr_logAddError (_("%s directory can not be used to download"), dir);
+      else
+        tr_logAddError (_("%s parent directory can not be used to create new download directories"), dir);
       return false;
     }
 
@@ -1387,7 +1437,7 @@ torrentSetLocation (tr_session               * session,
     {
       errmsg = "no location";
     }
-  else if (!isValidDir (location))
+  else if (!isValidDir (location, 0))
     {
       errmsg = "invalid download directory";
     }
@@ -1834,7 +1884,7 @@ torrentAdd (tr_session               * session,
             return "no download directory specified";
           }
 
-        if (!isValidDir (downloadDir))
+        if (!isValidDir (downloadDir, 0))
           {
             tr_ctorFree (ctor);
             return "invalid download directory";
@@ -1848,7 +1898,7 @@ torrentAdd (tr_session               * session,
                 return "no incomplete directory specified";
               }
           }
-        else if (!isValidDir (incompleteDir))
+        else if (!isValidDir (incompleteDir, 0))
           {
             tr_ctorFree (ctor);
             return "invalid incomplete directory";
