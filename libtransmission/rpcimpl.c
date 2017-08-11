@@ -101,7 +101,7 @@ isValidDir (const char * dir, const unsigned int depth)
   if (stat (dir, &sb))
     {
       const char * delim;
-      const char * subdir;
+      char * subdir;
       bool valid;
 
       if (errno != ENOENT)
@@ -1817,8 +1817,31 @@ torrentAdd (tr_session               * session,
 
       tr_variantDictFindStr (args_in, TR_KEY_cookies, &cookies, NULL);
 
-      if (tr_variantDictFindStr (args_in, TR_KEY_download_dir, &str, NULL))
-        tr_ctorSetDownloadDir (ctor, TR_FORCE, str);
+      if (tr_variantDictFindStr (args_in, TR_KEY_download_dir, &str, NULL)) {
+        if (!str || !*str) {
+          tr_ctorSetDownloadDir (ctor, TR_FORCE, tr_sessionGetDownloadDir(session));
+        } else if (str[0] != '/') {
+          const char * defpath = tr_sessionGetDownloadDir(session);
+          char * path = tr_malloc(strlen(defpath) + strlen(str) + 2); //
+
+          if (path == NULL)
+          {
+            return "unable to alloc";
+          }
+
+          strcpy(path, defpath);
+
+          if (defpath[strlen(path)-1] != '/')
+            strcat(path, "/");
+
+          strcat(path, str);
+          tr_ctorSetDownloadDir (ctor, TR_FORCE, path);
+          free(path);
+
+        } else {
+          tr_ctorSetDownloadDir (ctor, TR_FORCE, str);
+        }
+      }
 
       if (tr_variantDictFindBool (args_in, TR_KEY_paused, &boolVal))
         tr_ctorSetPaused (ctor, TR_FORCE, boolVal);
