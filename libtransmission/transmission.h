@@ -173,8 +173,9 @@ const char* tr_getDefaultDownloadDir (void);
 
 /* NDM internal limits */
 
-#if defined __KURD__ || \
-	defined __KN_1010__
+#if defined __KURD__	|| \
+	defined __KN_1010__ || \
+	defined __KN_1810__
 
 #define TR_MAX_SPEED_KB                     (1024*9)
 #define TR_MAX_PEERS_COUNT                       200
