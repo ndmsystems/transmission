@@ -1841,6 +1841,8 @@ torrentAdd (tr_session               * session,
         } else {
           tr_ctorSetDownloadDir (ctor, TR_FORCE, str);
         }
+      } else {
+        tr_ctorSetDownloadDir (ctor, TR_FORCE, tr_sessionGetDownloadDir(session));
       }
 
       if (tr_variantDictFindBool (args_in, TR_KEY_paused, &boolVal))
