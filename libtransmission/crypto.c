@@ -245,7 +245,7 @@ tr_cryptoComputeSecret (tr_crypto *     crypto,
   len = DH_compute_key (secret, bn, dh);
   if (len == -1)
     {
-      logErrorFromSSL ();
+      crypto->mySecretIsSet = 0;
     }
   else
     {

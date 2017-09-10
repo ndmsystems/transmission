@@ -421,6 +421,10 @@ readYb (tr_handshake * handshake, struct evbuffer * inbuf)
   /* compute the secret */
   evbuffer_remove (inbuf, yb, KEY_LEN);
   secret = tr_cryptoComputeSecret (handshake->crypto, yb);
+
+  if (handshake->crypto->mySecretIsSet == 0)
+    return tr_handshakeDone (handshake, false);
+
   memcpy (handshake->mySecret, secret, KEY_LEN);
 
   /* now send these: HASH ('req1', S), HASH ('req2', SKEY) xor HASH ('req3', S),
@@ -739,6 +743,10 @@ readYa (tr_handshake    * handshake,
   /* read the incoming peer's public key */
   evbuffer_remove (inbuf, ya, KEY_LEN);
   secret = tr_cryptoComputeSecret (handshake->crypto, ya);
+
+  if (handshake->crypto->mySecretIsSet == 0)
+    return tr_handshakeDone (handshake, false);
+
   memcpy (handshake->mySecret, secret, KEY_LEN);
   tr_sha1 (handshake->myReq1, "req1", 4, secret, KEY_LEN, NULL);
 
