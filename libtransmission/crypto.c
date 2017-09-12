@@ -25,6 +25,51 @@
 #include <openssl/opensslconf.h>
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
+ int DH_set0_pqg(DH *dh, BIGNUM *p, BIGNUM *q, BIGNUM *g)
+ {
+    /* If the fields p and g in d are NULL, the corresponding input
+     * parameters MUST be non-NULL.  q may remain NULL.
+     */
+    if ((dh->p == NULL && p == NULL)
+        || (dh->g == NULL && g == NULL))
+        return 0;
+
+    if (p != NULL) {
+        BN_free(dh->p);
+        dh->p = p;
+    }
+    if (q != NULL) {
+        BN_free(dh->q);
+        dh->q = q;
+    }
+    if (g != NULL) {
+        BN_free(dh->g);
+        dh->g = g;
+    }
+
+    if (q != NULL) {
+        dh->length = BN_num_bits(q);
+    }
+
+    return 1;
+ }
+
+ void DH_get0_key(const DH *dh, const BIGNUM **pub_key, const BIGNUM **priv_key)
+ {
+    if (pub_key != NULL)
+        *pub_key = dh->pub_key;
+    if (priv_key != NULL)
+        *priv_key = dh->priv_key;
+ }
+
+ int DH_set_length(DH *dh, long length)
+ {
+    dh->length = length;
+    return 1;
+ }
+#endif
+
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 #if defined(OPENSSL_THREADS)
 #define OPENSSL_LOCK_HOOKS
 
@@ -167,6 +212,24 @@ static const uint8_t dh_G[] = { 2 };
   } while (0)
 
 static void
+ tr_dh_align_key (uint8_t * key_buffer,
+                  size_t    key_size,
+                  size_t    buffer_size)
+ {
+   assert (key_size <= buffer_size);
+ 
+   /* DH can generate key sizes that are smaller than the size of
+      key buffer with exponentially decreasing probability, in which case
+      the msb's of key buffer need to be zeroed appropriately. */
+   if (key_size < buffer_size)
+     {
+       const size_t offset = buffer_size - key_size;
+       memmove (key_buffer + offset, key_buffer, key_size);
+       memset (key_buffer, 0, offset);
+     }
+ }
+
+static void
 ensureKeyExists (tr_crypto * crypto)
 {
   if (crypto->dh == NULL)
@@ -174,34 +237,42 @@ ensureKeyExists (tr_crypto * crypto)
       int len, offset;
       DH * dh = DH_new ();
 
-      dh->p = BN_bin2bn (dh_P, sizeof (dh_P), NULL);
-      if (dh->p == NULL)
+      BIGNUM * const dh_p = BN_bin2bn(dh_P, sizeof(dh_P), NULL);
+      if (dh_p == NULL)
         logErrorFromSSL ();
 
-      dh->g = BN_bin2bn (dh_G, sizeof (dh_G), NULL);
-      if (dh->g == NULL)
+      BIGNUM * const dh_g = BN_bin2bn(dh_G, sizeof(dh_G), NULL);
+      if (dh_g == NULL)
         logErrorFromSSL ();
 
-      /* private DH value: strong random BN of DH_PRIVKEY_LEN*8 bits */
-      dh->priv_key = BN_new ();
-      do
-        {
-          if (BN_rand (dh->priv_key, DH_PRIVKEY_LEN * 8, -1, 0) != 1)
-            logErrorFromSSL ();
-        }
-      while (BN_num_bits (dh->priv_key) < DH_PRIVKEY_LEN_MIN * 8);
+      if (dh_p == NULL || dh_g == NULL ||
+           !DH_set0_pqg (dh, dh_p, NULL, dh_g) )
+      {
+        BN_free(dh_p);
+        BN_free(dh_g);
+        DH_free(dh);
+        logErrorFromSSL ();
+
+        return;
+      }
+
+      DH_set_length(dh, DH_PRIVKEY_LEN * 8);
 
       if (!DH_generate_key (dh))
         logErrorFromSSL ();
 
+      const BIGNUM * hand_pub_key;
+
+      DH_get0_key (dh, &hand_pub_key, NULL);
+
       /* DH can generate key sizes that are smaller than the size of
          P with exponentially decreasing probability, in which case
          the msb's of myPublicKey need to be zeroed appropriately. */
-      len = BN_num_bytes (dh->pub_key);
-      offset = KEY_LEN - len;
-      assert (len <= KEY_LEN);
-      memset (crypto->myPublicKey, 0, offset);
-      BN_bn2bin (dh->pub_key, crypto->myPublicKey + offset);
+      len = BN_bn2bin (hand_pub_key, crypto->myPublicKey);
+
+      int dh_size = DH_size (dh);
+
+      tr_dh_align_key (crypto->myPublicKey, len, dh_size);
 
       crypto->dh = dh;
     }
@@ -381,7 +452,7 @@ tr_cryptoRandInt (int upperBound)
 
   assert (upperBound > 0);
 
-  if (RAND_pseudo_bytes ((unsigned char *) &noise, sizeof noise) >= 0)
+  if (RAND_bytes ((unsigned char *) &noise, sizeof noise) >= 0)
     {
       val = abs (noise) % upperBound;
     }
@@ -412,7 +483,7 @@ tr_cryptoWeakRandInt (int upperBound)
 void
 tr_cryptoRandBuf (void * buf, size_t len)
 {
-  if (RAND_pseudo_bytes ((unsigned char*)buf, len) != 1)
+  if (RAND_bytes ((unsigned char*)buf, len) != 1)
     logErrorFromSSL ();
 }
 
