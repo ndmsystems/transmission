@@ -401,7 +401,8 @@ static const struct tr_key_struct my_static[] =
   { "watch-dir", 9 },
   { "watch-dir-enabled", 17 },
   { "webseeds", 8 },
-  { "webseedsSendingToUs", 19 }
+  { "webseedsSendingToUs", 19 },
+  { "feedback-path", 13 }
 };
 
 static int
