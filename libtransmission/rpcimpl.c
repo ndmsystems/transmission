@@ -2006,9 +2006,12 @@ static int sendPeerPortFeedback(tr_session * session, tr_port port )
           tr_logAddError ("unable to send feedback");
           return -1;
         }
+
+      return 0;
     }
 #endif
-  return 0;
+
+  return -1;
 }
 
 /***
