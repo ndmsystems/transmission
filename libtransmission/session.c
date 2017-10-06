@@ -317,7 +317,7 @@ tr_sessionGetDefaultSettings (tr_variant * d)
 {
   assert (tr_variantIsDict (d));
 
-  tr_variantDictReserve (d, 63);
+  tr_variantDictReserve (d, 64);
   tr_variantDictAddBool (d, TR_KEY_blocklist_enabled,               false);
   tr_variantDictAddStr  (d, TR_KEY_blocklist_url,                   "http://www.example.com/blocklist");
   tr_variantDictAddInt  (d, TR_KEY_cache_size_mb,                   DEFAULT_CACHE_SIZE_MB);
@@ -383,6 +383,7 @@ tr_sessionGetDefaultSettings (tr_variant * d)
   tr_variantDictAddStr  (d, TR_KEY_bind_address_ipv6,               TR_DEFAULT_BIND_ADDRESS_IPV6);
   tr_variantDictAddBool (d, TR_KEY_start_added_torrents,            true);
   tr_variantDictAddBool (d, TR_KEY_trash_original_torrent_files,    false);
+  tr_variantDictAddStr  (d, TR_KEY_feedback_path,                   "");
 }
 
 void
@@ -390,7 +391,7 @@ tr_sessionGetSettings (tr_session * s, tr_variant * d)
 {
   assert (tr_variantIsDict (d));
 
-  tr_variantDictReserve (d, 63);
+  tr_variantDictReserve (d, 64);
   tr_variantDictAddBool (d, TR_KEY_blocklist_enabled,            tr_blocklistIsEnabled (s));
   tr_variantDictAddStr  (d, TR_KEY_blocklist_url,                tr_blocklistGetURL (s));
   tr_variantDictAddInt  (d, TR_KEY_cache_size_mb,                tr_sessionGetCacheLimit_MB (s));
@@ -455,6 +456,7 @@ tr_sessionGetSettings (tr_session * s, tr_variant * d)
   tr_variantDictAddStr  (d, TR_KEY_bind_address_ipv6,            tr_address_to_string (&s->public_ipv6->addr));
   tr_variantDictAddBool (d, TR_KEY_start_added_torrents,         !tr_sessionGetPaused (s));
   tr_variantDictAddBool (d, TR_KEY_trash_original_torrent_files, tr_sessionGetDeleteSource (s));
+  tr_variantDictAddStr  (d, TR_KEY_feedback_path,                tr_sessionGetFeedbackPath(s));
 }
 
 bool
@@ -847,6 +849,8 @@ sessionSetImpl (void * vdata)
     tr_sessionSetIncompleteDirEnabled (session, boolVal);
   if (tr_variantDictFindBool (settings, TR_KEY_rename_partial_files, &boolVal))
     tr_sessionSetIncompleteFileNamingEnabled (session, boolVal);
+  if (tr_variantDictFindStr (settings, TR_KEY_feedback_path, &str, NULL))
+    tr_sessionSetFeedbackPath (session, str);
 
   /* rpc server */
   if (session->rpcServer != NULL) /* close the old one */
@@ -1067,6 +1071,27 @@ tr_sessionIsIncompleteDirEnabled (const tr_session * session)
   assert (tr_isSession (session));
 
   return session->isIncompleteDirEnabled;
+}
+
+void
+tr_sessionSetFeedbackPath (tr_session * session, const char * path)
+{
+  assert (tr_isSession (session));
+
+  if (session->feedbackPath != path)
+    {
+      tr_free (session->feedbackPath);
+
+      session->feedbackPath = tr_strdup (path);
+    }
+}
+
+const char*
+tr_sessionGetFeedbackPath (const tr_session * session)
+{
+  assert (tr_isSession (session));
+
+  return session->feedbackPath;
 }
 
 /***

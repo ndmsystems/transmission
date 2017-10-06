@@ -35,6 +35,10 @@
 #include "version.h"
 #include "web.h"
 
+#ifdef HAVE_NDM
+#include <ndm/feedback.h>
+#endif
+
 #define MAJ_NONE        0
 #define MAJ_MTD         31
 
@@ -1943,6 +1947,49 @@ torrentAdd (tr_session               * session,
 ****
 ***/
 
+static int sendPeerPortFeedback(tr_session * session, tr_port port )
+{
+  if (!tr_isSession (session))
+    {
+	  return -1;
+    }
+
+  if (session->private_peer_port == port)
+    {
+	  return 0;
+    }
+
+#ifdef HAVE_NDM
+  const char* path = tr_sessionGetFeedbackPath (session);
+  if (path && *path)
+    {
+      const char *const args[] =
+        {
+          path,
+          NULL
+        };
+
+      if(!ndm_feedback(
+          NDM_FEEDBACK_TIMEOUT_MSEC,
+          args,
+          "peer-port=%d\n",
+          port))
+        {
+          tr_logAddError ("unable to send feedback");
+          return -1;
+        }
+
+      return 0;
+    }
+#endif
+
+  return -1;
+}
+
+/***
+****
+***/
+
 static const char*
 sessionSet (tr_session               * session,
             tr_variant               * args_in,
@@ -2041,10 +2088,15 @@ sessionSet (tr_session               * session,
     tr_sessionSetLPDEnabled (session, boolVal);
 
 /*  if (tr_variantDictFindBool (args_in, TR_KEY_peer_port_random_on_start, &boolVal))
-    tr_sessionSetPeerPortRandomOnStart (session, boolVal);
+    tr_sessionSetPeerPortRandomOnStart (session, boolVal); */
 
   if (tr_variantDictFindInt (args_in, TR_KEY_peer_port, &i))
-    tr_sessionSetPeerPort (session, i); */
+  {
+    if (!sendPeerPortFeedback(session, i))
+      {
+        tr_sessionSetPeerPort (session, i);
+      }
+  }
 
   if (tr_variantDictFindBool (args_in, TR_KEY_port_forwarding_enabled, &boolVal))
     tr_sessionSetPortForwardingEnabled (session, boolVal);
@@ -2214,6 +2266,7 @@ sessionGet (tr_session               * s,
   tr_variantDictAddBool (d, TR_KEY_script_torrent_done_enabled, tr_sessionIsTorrentDoneScriptEnabled (s));
   tr_variantDictAddBool (d, TR_KEY_queue_stalled_enabled, tr_sessionGetQueueStalledEnabled (s));
   tr_variantDictAddInt  (d, TR_KEY_queue_stalled_minutes, tr_sessionGetQueueStalledMinutes (s));
+  tr_variantDictAddStr  (d, TR_KEY_feedback_path, tr_sessionGetFeedbackPath (s));
   tr_formatter_get_units (tr_variantDictAddDict (d, TR_KEY_units, 0));
   tr_variantDictAddStr  (d, TR_KEY_version, LONG_VERSION_STRING);
   switch (tr_sessionGetEncryption (s))

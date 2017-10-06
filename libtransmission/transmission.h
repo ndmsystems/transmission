@@ -583,6 +583,9 @@ tr_encryption_mode tr_sessionGetEncryption (tr_session * session);
 void               tr_sessionSetEncryption (tr_session * session,
                                             tr_encryption_mode    mode);
 
+void tr_sessionSetFeedbackPath (tr_session * session, const char * path);
+
+const char* tr_sessionGetFeedbackPath (const tr_session * session);
 
 /***********************************************************************
 ** Incoming Peer Connections Port
