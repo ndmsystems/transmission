@@ -38,6 +38,10 @@
 #include "version.h"
 #include "web.h"
 
+#ifdef HAVE_NDM
+#include <ndm/feedback.h>
+#endif
+
 #define MAJ_NONE 0
 #define MAJ_MTD 31
 
@@ -2102,6 +2106,46 @@ static char const* torrentAdd(tr_session* session, tr_variant* args_in, tr_varia
 ****
 ***/
 
+static int sendPeerPortFeedback(tr_session* session, tr_port port)
+{
+    if (!tr_isSession(session))
+    {
+        return -1;
+    }
+
+    if (session->private_peer_port == port)
+    {
+        return 0;
+    }
+
+#ifdef HAVE_NDM
+    const char* path = tr_sessionGetFeedbackPath(session);
+    if (path && *path)
+    {
+        const char* const args[] =
+        {
+            path,
+            NULL
+        };
+
+        if (!ndm_feedback(NDM_FEEDBACK_TIMEOUT_MSEC, args, "peer-port=%d\n", port))
+        {
+            tr_logAddError("unable to send feedback");
+            return -1;
+        }
+
+        return 0;
+    }
+
+#endif
+
+    return -1;
+}
+
+/***
+****
+***/
+
 static char const* sessionSet(tr_session* session, tr_variant* args_in, tr_variant* args_out UNUSED,
     struct tr_rpc_idle_data* idle_data UNUSED)
 {
@@ -2256,14 +2300,19 @@ static char const* sessionSet(tr_session* session, tr_variant* args_in, tr_varia
         tr_sessionSetLPDEnabled(session, boolVal);
     }
 
+/*
     if (tr_variantDictFindBool(args_in, TR_KEY_peer_port_random_on_start, &boolVal))
     {
         tr_sessionSetPeerPortRandomOnStart(session, boolVal);
     }
+*/
 
-    if (tr_variantDictFindInt(args_in, TR_KEY_peer_port, &i))
+    if (tr_variantDictFindInt(args_in, TR_KEY_peer_port, &i) && i >= 1024 && i <= 65535)
     {
-        tr_sessionSetPeerPort(session, i);
+        if (!sendPeerPortFeedback(session, i))
+        {
+            tr_sessionSetPeerPort(session, i);
+        }
     }
 
     if (tr_variantDictFindBool(args_in, TR_KEY_port_forwarding_enabled, &boolVal))

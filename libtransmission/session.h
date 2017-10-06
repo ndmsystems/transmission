@@ -196,6 +196,8 @@ struct tr_session
     char* torrentDir;
     char* incompleteDir;
 
+    char* feedbackPath;
+
     char* blocklist_url;
 
     struct tr_device_info* downloadDir;
