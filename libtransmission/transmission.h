@@ -187,13 +187,20 @@ const char* tr_getDefaultDownloadDir (void);
 #define TR_MAX_PEERS_COUNT                       200
 #define NDM_CACHE_SIZE_MB                          2
 
-#elif defined __KNGRC__ || defined __KURC__ //MT7620 128M RAM
+#elif defined __KNGRC__ || \
+	  defined __KURC__
+
+/* MT7620 128M RAM */
 
 #define TR_MAX_SPEED_KB                     (1024*4)
 #define TR_MAX_PEERS_COUNT                       120
 #define NDM_CACHE_SIZE_MB                          1
 
-#elif defined __KIRB__ || defined __KN_1410__ //MT7628 128M RAM
+#elif defined __KIRB__	  || \
+	  defined __KN_1410__ || \
+	  defined __KN_1710__
+
+/* MT7628 128M RAM */
 
 #define TR_MAX_SPEED_KB                     (1024*3)
 #define TR_MAX_PEERS_COUNT                       120
