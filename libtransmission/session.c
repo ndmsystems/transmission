@@ -255,7 +255,11 @@ tr_sessionGetPublicAddress (const tr_session * session, int tr_af_type, bool * i
 ****
 ***/
 
-#define TR_DEFAULT_ENCRYPTION   TR_ENCRYPTION_PREFERRED
+#ifdef TR_LIGHTWEIGHT
+ #define TR_DEFAULT_ENCRYPTION   TR_CLEAR_PREFERRED
+#else
+ #define TR_DEFAULT_ENCRYPTION   TR_ENCRYPTION_PREFERRED
+#endif
 
 static int
 parse_tos (const char *str)
@@ -313,7 +317,7 @@ tr_sessionGetDefaultSettings (tr_variant * d)
   tr_variantDictAddBool (d, TR_KEY_blocklist_enabled,               false);
   tr_variantDictAddStr  (d, TR_KEY_blocklist_url,                   "http://www.example.com/blocklist");
   tr_variantDictAddInt  (d, TR_KEY_cache_size_mb,                   DEFAULT_CACHE_SIZE_MB);
-  tr_variantDictAddBool (d, TR_KEY_dht_enabled,                     true);
+  tr_variantDictAddBool (d, TR_KEY_dht_enabled,                     false);
   tr_variantDictAddBool (d, TR_KEY_utp_enabled,                     true);
   tr_variantDictAddBool (d, TR_KEY_lpd_enabled,                     false);
   tr_variantDictAddStr  (d, TR_KEY_download_dir,                    tr_getDefaultDownloadDir ());
