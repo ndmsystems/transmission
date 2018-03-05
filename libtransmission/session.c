@@ -339,7 +339,7 @@ void tr_sessionGetDefaultSettings(tr_variant* d)
     tr_variantDictAddStr(d, TR_KEY_blocklist_url, "http://www.example.com/blocklist");
     tr_variantDictAddInt(d, TR_KEY_cache_size_mb, DEFAULT_CACHE_SIZE_MB);
     tr_variantDictAddBool(d, TR_KEY_dht_enabled, true);
-    tr_variantDictAddBool(d, TR_KEY_utp_enabled, true);
+    tr_variantDictAddBool(d, TR_KEY_utp_enabled, false);
     tr_variantDictAddBool(d, TR_KEY_lpd_enabled, false);
     tr_variantDictAddStr(d, TR_KEY_download_dir, tr_getDefaultDownloadDir());
     tr_variantDictAddInt(d, TR_KEY_speed_limit_down, DEFAULT_SPEED_LIMIT_KBPS);
