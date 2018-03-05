@@ -178,13 +178,13 @@ const char* tr_getDefaultDownloadDir (void);
 	defined __KN_1810__ || \
 	defined __KN_1910__
 
-#define TR_MAX_SPEED_KB                     (1024*15)
+#define TR_MAX_SPEED_KB                    (1024*15)
 #define TR_MAX_PEERS_COUNT                       200
-#define NDM_CACHE_SIZE_MB                          2
+#define NDM_CACHE_SIZE_MB                          4
 
 #elif defined __KNGRE__
 
-#define TR_MAX_SPEED_KB                     (1024*12)
+#define TR_MAX_SPEED_KB                    (1024*12)
 #define TR_MAX_PEERS_COUNT                       200
 #define NDM_CACHE_SIZE_MB                          2
 
