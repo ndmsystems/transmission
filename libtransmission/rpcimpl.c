@@ -13,6 +13,7 @@
 #include <stdlib.h> /* strtol */
 #include <string.h> /* strcmp */
 
+#include <sys/sysmacros.h> /* major() */
 #include <sys/types.h> /* stat (), umask () */
 #include <sys/stat.h> /* stat (), umask () */
 
