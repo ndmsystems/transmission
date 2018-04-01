@@ -70,11 +70,13 @@ extern "C" {
 #endif
 
 #ifdef __UCLIBC__
-#define TR_UCLIBC_CHECK_VERSION(major,minor,micro) \
-  (__UCLIBC_MAJOR__ > (major) || \
-   (__UCLIBC_MAJOR__ == (major) && __UCLIBC_MINOR__ > (minor)) || \
-   (__UCLIBC_MAJOR__ == (major) && __UCLIBC_MINOR__ == (minor) && \
-      __UCLIBC_SUBLEVEL__ >= (micro)))
+ #define TR_UCLIBC_CHECK_VERSION(major,minor,micro) \
+   (__UCLIBC_MAJOR__ > (major) || \
+    (__UCLIBC_MAJOR__ == (major) && __UCLIBC_MINOR__ > (minor)) || \
+    (__UCLIBC_MAJOR__ == (major) && __UCLIBC_MINOR__ == (minor) && \
+       __UCLIBC_SUBLEVEL__ >= (micro)))
+#else
+ #define TR_UCLIBC_CHECK_VERSION(major,minor,micro) 0
 #endif
 
 
