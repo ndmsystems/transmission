@@ -213,7 +213,7 @@ const char* tr_getDefaultDownloadDir (void);
 #define TR_MAX_PEERS_COUNT                        80
 #define NDM_CACHE_SIZE_MB                          1
 
-#elif defined __RT6XXX__ || defined __RT63XXX__
+#elif defined __RT6XXX__ || defined __RT63XXX__ || defined __EN751X__
 
 #define TR_MAX_SPEED_KB                     (1024*5)
 #define TR_MAX_PEERS_COUNT                       200
