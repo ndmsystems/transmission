@@ -37,6 +37,10 @@
 #include "web.h"
 
 #ifdef HAVE_NDM /* { */
+#include <fcntl.h>
+#include <sys/un.h>
+#include <sys/stat.h>
+#include <event2/listener.h>
 #include <ndm/core.h>
 #include <ndm/dlist.h>
 
@@ -47,6 +51,8 @@
 /* Should be synchronized with NDM constants. */
 #define NDM_LOCAL_USERNAME_SIZE_ 32
 #define NDM_LOCAL_PASSWORD_SIZE_ 32
+
+#define TR_RPC_UDS_ "/var/run/transmission.rpc.sock"
 
 #else /* } HAVE_NDM { */
 
@@ -72,6 +78,9 @@ struct tr_rpc_server
     char* url;
     struct tr_address bindAddress;
     struct evhttp* httpd;
+#ifdef HAVE_NDM
+    struct evhttp* rpcd;
+#endif /* HAVE_NDM */
     struct event* start_retry_timer;
     int start_retry_counter;
     tr_session* session;
@@ -722,6 +731,52 @@ static bool test_session_id(struct tr_rpc_server* server, struct evhttp_request*
 
 #endif
 
+#ifdef HAVE_NDM
+static void handle_rpcd_request(struct evhttp_request* req, void* arg)
+{
+    struct tr_rpc_server* server = arg;
+
+    if (req && req->evcon)
+    {
+        evhttp_add_header(req->output_headers, "Server", MY_REALM);
+
+        if (!strcmp(req->uri + strlen(server->url), "upload"))
+        {
+            handle_upload(req, server);
+        }
+
+#ifdef REQUIRE_SESSION_ID
+        else if (!test_session_id(server, req))
+        {
+            const char* sessionId = get_current_session_id(server);
+            char* tmp = tr_strdup_printf("<p>Your request had an invalid session-id header.</p>"
+                "<p>To fix this, follow these steps:"
+                "<ol><li> When reading a response, get its X-Transmission-Session-Id header and remember it"
+                "<li> Add the updated header to your outgoing requests"
+                "<li> When you get this 409 error message, resend your request with the updated header"
+                "</ol></p>"
+                "<p>This requirement has been added to help prevent "
+                "<a href=\"http://en.wikipedia.org/wiki/Cross-site_request_forgery\">CSRF</a> "
+                "attacks.</p>"
+                "<p><code>%s: %s</code></p>", TR_RPC_SESSION_ID_HEADER, sessionId);
+            evhttp_add_header(req->output_headers, TR_RPC_SESSION_ID_HEADER, sessionId);
+            send_simple_response(req, 409, tmp);
+            tr_free(tmp);
+        }
+#endif
+        else if (!strncmp(req->uri + strlen(server->url), "rpc", 3))
+        {
+            handle_rpc(req, server);
+        }
+        else
+        {
+            send_simple_response(req, HTTP_NOTFOUND, req->uri);
+        }
+    }
+}
+
+#endif /* HAVE_NDM */
+
 static void handle_request(struct evhttp_request* req, void* arg)
 {
     struct tr_rpc_server* server = arg;
@@ -943,6 +998,86 @@ static void startServer(void* vserver)
     }
 
 #ifdef HAVE_NDM
+    if (!server->rpcd)
+    {
+        int uds;
+        struct sockaddr_un addr_un;
+        int len = 0;
+        struct evconnlistener* listener;
+        const mode_t new_mode = S_IRUSR | S_IWUSR | S_IXUSR |
+            S_IRGRP | S_IWGRP | S_IXGRP |
+            S_IROTH | S_IWOTH | S_IXOTH;
+
+        memset(&addr_un, 0, sizeof(addr_un));
+        addr_un.sun_family = AF_UNIX;
+
+        len = snprintf(addr_un.sun_path, sizeof(addr_un.sun_path), "%s", TR_RPC_UDS_);
+
+        if (len < 0 || len >= (int)sizeof(addr_un.sun_path))
+        {
+            tr_logAddNamedError(MY_NAME, "Unable to make UDS");
+
+            return;
+        }
+
+        if (unlink(addr_un.sun_path))
+        {
+            const int err = errno;
+
+            if (err != ENOENT)
+            {
+                tr_logAddNamedError(MY_NAME, "unable to unlink old UDS: %s", strerror(err));
+
+                return;
+            }
+        }
+
+        uds = socket(PF_UNIX, SOCK_STREAM, 0);
+
+        if (uds < 0)
+        {
+            tr_logAddNamedError(MY_NAME, "unable open UDS");
+
+            return;
+        }
+
+        if (bind(uds, (struct sockaddr*)&addr_un, sizeof(addr_un)) < 0)
+        {
+            const int err = errno;
+            tr_logAddNamedError(MY_NAME, "unable to bind UDS: %s", strerror(err));
+
+            return;
+        }
+
+        if (chmod(addr_un.sun_path, new_mode) < 0)
+        {
+            const int err = errno;
+
+            tr_logAddNamedError(MY_NAME, "unable to change UDS mode: %s", strerror(err));
+
+            return;
+        }
+
+        fcntl(uds, F_SETFD, fcntl(uds, F_GETFD) | FD_CLOEXEC);
+
+        if (fcntl(uds, F_SETFL, O_NONBLOCK) == -1)
+        {
+            const int err = errno;
+
+            tr_logAddNamedError(MY_NAME, "unable to set UDS to nonblocking: %s", strerror(err));
+
+            return;
+        }
+
+        server->rpcd = evhttp_new(server->session->event_base);
+
+        listener = evconnlistener_new(server->session->event_base, NULL, NULL,
+            LEV_OPT_REUSEABLE | LEV_OPT_CLOSE_ON_EXEC | LEV_OPT_CLOSE_ON_FREE, -1, uds);
+
+        evhttp_bind_listener(server->rpcd, listener);
+        evhttp_set_gencb(server->rpcd, handle_rpcd_request, server);
+    }
+
     server->core = ndm_core_open("transmission/ci", NDM_LOCAL_AUTH_TIMEOUT_, NDM_CORE_CACHE_MAX_SIZE_);
 #endif
 
@@ -969,6 +1104,13 @@ static void stopServer(tr_rpc_server* server)
     tr_logAddNamedDbg(MY_NAME, "Stopped listening on %s:%d", address, port);
 
 #ifdef HAVE_NDM
+    if (server->rpcd)
+    {
+        evhttp_free(server->rpcd);
+        server->rpcd = NULL;
+        unlink(TR_RPC_UDS_);
+    }
+
     ndm_core_close(&server->core);
 #endif
 }
