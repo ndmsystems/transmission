@@ -733,6 +733,7 @@ handle_request (struct evhttp_request * req, void * arg)
 #ifdef HAVE_NDM /* { */
       const bool  is_local = strcmp (req->remote_host, "127.0.0.1") == 0 ||
                              strcmp (req->remote_host, "::1") == 0;
+      bool        is_fba = false;
 #endif /* } HAVE_NDM */
 
       evhttp_add_header (req->output_headers, "Server", MY_REALM);
@@ -749,6 +750,14 @@ handle_request (struct evhttp_request * req, void * arg)
             }
         }
 
+#ifdef HAVE_NDM /* { */
+      auth = evhttp_find_header (req->input_headers, "X-WWW-Authenticate");
+      if (is_local && auth && !evutil_ascii_strncasecmp (auth, "ndm", 3))
+        {
+          is_fba = true; // proxified form-based auth
+        }
+#endif /* } HAVE_NDM */
+
       if (!isAddressAllowed (server, req->remote_host))
         {
           send_simple_response (req, 403,
@@ -759,7 +768,7 @@ handle_request (struct evhttp_request * req, void * arg)
         }
       else if (server->isPasswordEnabled
 #ifdef HAVE_NDM /* { */
-                 && (!pass || !user || !ndm_login(server, is_local, user, pass)))
+                 && !is_fba && (!pass || !user || !ndm_login(server, is_local, user, pass)))
 #else  /* } HAVE_NDM { */
                  && (!pass || !user || strcmp (server->username, user)
                                     || !tr_ssha1_matches (server->password,
