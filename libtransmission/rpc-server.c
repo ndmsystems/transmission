@@ -735,11 +735,8 @@ handle_rpcd_request (struct evhttp_request * req, void * arg)
 {
   struct tr_rpc_server * server = arg;
 
-  tr_logAddNamedError (MY_NAME, "rpcd 1");
-
   if (req && req->evcon)
     {
-	tr_logAddNamedError (MY_NAME, "rpcd 2");
       evhttp_add_header (req->output_headers, "Server", MY_REALM);
 
       if (!strcmp (req->uri + strlen (server->url), "upload"))
