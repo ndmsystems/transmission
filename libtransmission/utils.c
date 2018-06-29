@@ -1562,7 +1562,7 @@ tr_moveFile (const char * oldpath, const char * newpath, bool * renamed)
   /* make sure the target directory exists */
   {
     char * newdir = tr_dirname (newpath);
-    int i = tr_mkdirp (newdir, 0777);
+    int i = tr_mkdirp (newdir, 0766);
     tr_free (newdir);
     if (i)
       return i;

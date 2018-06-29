@@ -71,7 +71,7 @@ watchdir_new_impl (dtr_watchdir * w)
     {
         if (!tr_fileExists (w->dir, NULL))
         {
-            tr_mkdirp (w->dir, 0777);
+            tr_mkdirp (w->dir, 0766);
         }
         tr_logAddInfo ("Using inotify to watch directory \"%s\"", w->dir);
         i = inotify_add_watch (w->inotify_fd, w->dir, DTR_INOTIFY_MASK);

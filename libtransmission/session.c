@@ -725,7 +725,7 @@ tr_sessionInitImpl (void * vdata)
 
   {
     char * filename = tr_buildPath (session->configDir, "blocklists", NULL);
-    tr_mkdirp (filename, 0777);
+    tr_mkdirp (filename, 0766);
     tr_free (filename);
     loadBlocklists (session);
   }

@@ -183,7 +183,7 @@ test_set_location (void)
   /* init the session */
   session = libttest_session_init (NULL);
   target_dir = tr_buildPath (tr_sessionGetConfigDir (session), "target", NULL);
-  tr_mkdirp (target_dir, 0777);
+  tr_mkdirp (target_dir, 0766);
   
   /* init a torrent. */
   tor = libttest_zero_torrent_init (session);

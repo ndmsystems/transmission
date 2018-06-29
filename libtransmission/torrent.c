@@ -3086,7 +3086,7 @@ setLocation (void * vdata)
   tr_logAddDebug ("Moving \"%s\" location from currentDir \"%s\" to \"%s\"",
                   tr_torrentName (tor), tor->currentDir, location);
 
-  tr_mkdirp (location, 0777);
+  tr_mkdirp (location, 0766);
 
   if (!tr_is_same_file (location, tor->currentDir))
     {

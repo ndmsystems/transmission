@@ -340,7 +340,7 @@ cached_file_open (struct tr_cached_file  * o,
   if (writable)
     {
       char * dir = tr_dirname (filename);
-      const int err = tr_mkdirp (dir, 0777) ? errno : 0;
+      const int err = tr_mkdirp (dir, 0766) ? errno : 0;
       if (err)
         {
           tr_logAddError (_("Couldn't create \"%1$s\": %2$s"), dir, tr_strerror (err));
