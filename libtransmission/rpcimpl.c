@@ -2104,7 +2104,7 @@ sessionSet (tr_session               * session,
 /*  if (tr_variantDictFindBool (args_in, TR_KEY_peer_port_random_on_start, &boolVal))
     tr_sessionSetPeerPortRandomOnStart (session, boolVal); */
 
-  if (tr_variantDictFindInt (args_in, TR_KEY_peer_port, &i))
+  if (tr_variantDictFindInt (args_in, TR_KEY_peer_port, &i) && i >= 1024 && i <= 65535)
   {
     if (!sendPeerPortFeedback(session, i))
       {
