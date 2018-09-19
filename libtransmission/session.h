@@ -141,6 +141,7 @@ struct tr_session
 
     unsigned int                 speedLimit_Bps[2];
     bool                         speedLimitEnabled[2];
+    bool                         dropLimits;
 
     struct tr_turtle_info        turtle;
 
