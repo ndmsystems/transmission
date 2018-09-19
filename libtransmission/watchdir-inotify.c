@@ -166,6 +166,11 @@ tr_watchdir_backend* tr_watchdir_inotify_new(tr_watchdir_t handle)
         goto fail;
     }
 
+    if (!tr_sys_path_exists(path, NULL))
+    {
+        tr_sys_dir_create(path, TR_SYS_DIR_CREATE_PARENTS, 0777, NULL);
+    }
+
     if ((backend->inwd = inotify_add_watch(backend->infd, path, INOTIFY_WATCH_MASK | IN_ONLYDIR)) == -1)
     {
         log_error("Failed to setup watchdir \"%s\": %s (%d)", path, tr_strerror(errno), errno);
