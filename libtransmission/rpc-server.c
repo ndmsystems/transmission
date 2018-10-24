@@ -44,10 +44,6 @@
 # include <ndm/core.h>
 # include <ndm/dlist.h>
 
-#ifndef  __TARGET_REALM__
-# define __TARGET_REALM__           "Undefined realm"
-#endif
-
 # define NDM_LOCAL_AUTH_TIMEOUT_    500
 
 # define NDM_CORE_CACHE_MAX_SIZE_   4096
@@ -665,7 +661,7 @@ ndm_login (struct tr_rpc_server * server,
           authenticated = true;
         }
       else if (ndm_core_authenticate (server->core, username, password,
-                 __TARGET_REALM__, "torrent", &authenticated)
+                 "torrent", &authenticated)
                && authenticated)
         {
           u = tr_malloc (sizeof (*u));
