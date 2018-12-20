@@ -16,6 +16,7 @@
 #include <zlib.h>
 #include <sys/types.h> /* stat (), umask () */
 #include <sys/stat.h> /* stat (), umask () */
+#include <sys/sysmacros.h>
 
 #include <event2/buffer.h>
 
