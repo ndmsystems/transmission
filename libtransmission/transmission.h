@@ -138,7 +138,8 @@ const char* tr_getDefaultDownloadDir (void);
 #if defined __KURD__	|| \
 	defined __KN_1010__ || \
 	defined __KN_1810__ || \
-	defined __KN_1910__
+	defined __KN_1910__ || \
+	defined __KN_2310__
 
 #define TR_MAX_SPEED_KB                    (1024*15)
 #define TR_MAX_PEERS_COUNT                       200
