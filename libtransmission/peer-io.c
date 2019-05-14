@@ -28,7 +28,6 @@
 #include "tr-utp.h"
 #include "utils.h"
 
-
 #ifdef _WIN32
  #undef  EAGAIN
  #define EAGAIN       WSAEWOULDBLOCK
@@ -606,6 +605,7 @@ tr_peerIoNew (tr_session       * session,
 
     if (socket != TR_BAD_SOCKET) {
         tr_netSetTOS (socket, session->peerSocketTOS);
+        tr_netSetMark (socket, session->peerSocketMark);
         maybeSetCongestionAlgorithm (socket, session->peer_congestion_algorithm);
     }
 
@@ -941,6 +941,7 @@ tr_peerIoReconnect (tr_peerIo * io)
     {
         event_enable (io, pendingEvents);
         tr_netSetTOS (io->socket, session->peerSocketTOS);
+        tr_netSetMark (io->socket, session->peerSocketMark);
         maybeSetCongestionAlgorithm (io->socket, session->peer_congestion_algorithm);
         return 0;
     }

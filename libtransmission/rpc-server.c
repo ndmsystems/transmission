@@ -1074,7 +1074,7 @@ startServer (void * vserver)
       if (bind (uds, (struct sockaddr *) &addr_un, sizeof (addr_un)) < 0)
         {
           const int err = errno;
-          tr_logAddNamedError (MY_NAME, "unable to bind UDS: %1", strerror (err));
+          tr_logAddNamedError (MY_NAME, "unable to bind UDS: %s", strerror (err));
 
           return;
         }
@@ -1083,7 +1083,7 @@ startServer (void * vserver)
          {
            const int err = errno;
 
-           tr_logAddNamedError (MY_NAME, "unable to change UDS mode: %1", strerror (err));
+           tr_logAddNamedError (MY_NAME, "unable to change UDS mode: %s", strerror (err));
 
            return;
          }
@@ -1094,7 +1094,7 @@ startServer (void * vserver)
         {
           const int err = errno;
 
-          tr_logAddNamedError (MY_NAME, "unable to set UDS to nonblocking: %1", strerror (err));
+          tr_logAddNamedError (MY_NAME, "unable to set UDS to nonblocking: %s", strerror (err));
 
           return;
         }

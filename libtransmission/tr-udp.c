@@ -24,7 +24,6 @@ THE SOFTWARE.
 #include <assert.h>
 #include <string.h> /* memcmp (), memcpy (), memset () */
 #include <stdlib.h> /* malloc (), free () */
-
 #ifdef _WIN32
  #include <io.h> /* dup2 () */
 #else
@@ -125,7 +124,7 @@ rebind_ipv6 (tr_session *ss, bool force)
     bool is_default;
     const struct tr_address * public_addr;
     struct sockaddr_in6 sin6;
-    const unsigned char *ipv6 = tr_globalIPv6 ();
+    const unsigned char *ipv6 = tr_globalIPv6 (ss->peerSocketMark);
     tr_socket_t s = TR_BAD_SOCKET;
     int rc;
     int one = 1;
@@ -260,6 +259,8 @@ tr_udpInit (tr_session *ss)
         goto ipv6;
     }
 
+    tr_netSetMark (ss->udp_socket, ss->peerSocketMark);
+
     memset (&sin, 0, sizeof (sin));
     sin.sin_family = AF_INET;
     public_addr = tr_sessionGetPublicAddress (ss, TR_AF_INET, &is_default);
@@ -280,7 +281,7 @@ tr_udpInit (tr_session *ss)
         tr_logAddNamedError ("UDP", "Couldn't allocate IPv4 event");
 
  ipv6:
-    if (tr_globalIPv6 ())
+    if (tr_globalIPv6 (ss->peerSocketMark))
         rebind_ipv6 (ss, true);
     if (ss->udp6_socket != TR_BAD_SOCKET) {
         ss->udp6_event =

@@ -145,6 +145,7 @@ tr_netOpenPeerUTPSocket (tr_session        * session,
 
 tr_socket_t tr_netBindTCP (const tr_address * addr,
                            tr_port            port,
+                           uint32_t           mark,
                            bool               suppressMsgs);
 
 tr_socket_t tr_netAccept (tr_session  * session,
@@ -154,6 +155,9 @@ tr_socket_t tr_netAccept (tr_session  * session,
 
 void tr_netSetTOS (tr_socket_t s,
                    int         tos);
+
+void tr_netSetMark (tr_socket_t s,
+                   uint32_t     mark);
 
 void tr_netSetCongestionControl (tr_socket_t   s,
                                  const char  * algorithm);
@@ -172,6 +176,6 @@ bool tr_net_hasIPv6 (tr_port);
  */
 char* tr_net_strerror (char * buf, size_t buflen, int err);
 
-const unsigned char *tr_globalIPv6 (void);
+const unsigned char *tr_globalIPv6 (uint32_t mark);
 
 #endif /* _TR_NET_H_ */

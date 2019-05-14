@@ -15,7 +15,6 @@
 #else
   #include <sys/select.h>
 #endif
-
 #include <curl/curl.h>
 
 #include <event2/buffer.h>
@@ -150,6 +149,8 @@ sockoptfunction (void * vtask, curl_socket_t fd, curlsocktype purpose UNUSED)
       setsockopt (fd, SOL_SOCKET, SO_SNDBUF, (const void *) &sndbuf, sizeof (sndbuf));
       setsockopt (fd, SOL_SOCKET, SO_RCVBUF, (const void *) &rcvbuf, sizeof (rcvbuf));
     }
+
+  setsockopt (fd, SOL_SOCKET, SO_MARK, (const char *)&task->session->peerSocketMark, sizeof(task->session->peerSocketMark));
 
   /* return nonzero if this function encountered an error */
   return 0;

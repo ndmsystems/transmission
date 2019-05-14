@@ -205,7 +205,7 @@ open_incoming_peer_port (tr_session * session)
 
   /* bind an ipv4 port to listen for incoming peers... */
   b = session->public_ipv4;
-  b->socket = tr_netBindTCP (&b->addr, session->private_peer_port, false);
+  b->socket = tr_netBindTCP (&b->addr, session->private_peer_port, session->peerSocketMark, false);
   if (b->socket != TR_BAD_SOCKET)
     {
       b->ev = event_new (session->event_base, b->socket, EV_READ | EV_PERSIST, accept_incoming_peer, session);
@@ -216,7 +216,7 @@ open_incoming_peer_port (tr_session * session)
   if (tr_net_hasIPv6 (session->private_peer_port))
     {
       b = session->public_ipv6;
-      b->socket = tr_netBindTCP (&b->addr, session->private_peer_port, false);
+      b->socket = tr_netBindTCP (&b->addr, session->private_peer_port, session->peerSocketMark, false);
       if (b->socket != TR_BAD_SOCKET)
         {
           b->ev = event_new (session->event_base, b->socket, EV_READ | EV_PERSIST, accept_incoming_peer, session);
@@ -338,6 +338,7 @@ tr_sessionGetDefaultSettings (tr_variant * d)
   tr_variantDictAddInt  (d, TR_KEY_peer_limit_global,               TR_MAX_PEERS_COUNT);
   tr_variantDictAddInt  (d, TR_KEY_peer_limit_per_torrent,          atoi (TR_DEFAULT_PEER_LIMIT_TORRENT_STR));
   tr_variantDictAddInt  (d, TR_KEY_peer_port,                       atoi (TR_DEFAULT_PEER_PORT_STR));
+  tr_variantDictAddInt  (d, TR_KEY_mark_data,                       0);
   tr_variantDictAddBool (d, TR_KEY_peer_port_random_on_start,       false);
   tr_variantDictAddInt  (d, TR_KEY_peer_port_random_low,            49152);
   tr_variantDictAddInt  (d, TR_KEY_peer_port_random_high,           65535);
@@ -412,6 +413,7 @@ tr_sessionGetSettings (tr_session * s, tr_variant * d)
   tr_variantDictAddInt  (d, TR_KEY_peer_limit_global,            s->peerLimit);
   tr_variantDictAddInt  (d, TR_KEY_peer_limit_per_torrent,       s->peerLimitPerTorrent);
   tr_variantDictAddInt  (d, TR_KEY_peer_port,                    tr_sessionGetPeerPort (s));
+  tr_variantDictAddInt  (d, TR_KEY_mark_data,                    s->peerSocketMark);
   tr_variantDictAddBool (d, TR_KEY_peer_port_random_on_start,    s->isPortRandom);
   tr_variantDictAddInt  (d, TR_KEY_peer_port_random_low,         s->randomPortLow);
   tr_variantDictAddInt  (d, TR_KEY_peer_port_random_high,        s->randomPortHigh);
@@ -807,6 +809,8 @@ sessionSetImpl (void * vdata)
     tr_sessionSetEncryption (session, i);
   if (tr_variantDictFindStr (settings, TR_KEY_peer_socket_tos, &str, NULL))
     session->peerSocketTOS = parse_tos (str);
+  if (tr_variantDictFindInt (settings, TR_KEY_mark_data, &i))
+    session->peerSocketMark = i;
   if (tr_variantDictFindStr (settings, TR_KEY_peer_congestion_algorithm, &str, NULL))
     session->peer_congestion_algorithm = tr_strdup (str);
   else

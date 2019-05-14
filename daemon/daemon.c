@@ -111,6 +111,7 @@ static const struct tr_option options[] =
     { 'f', "foreground", "Run in the foreground instead of daemonizing", "f", 0, NULL },
     { 'g', "config-dir", "Where to look for configuration files", "g", 1, "<path>" },
     { 'p', "port", "RPC port (Default: " TR_DEFAULT_RPC_PORT_STR ")", "p", 1, "<port>" },
+    { 'Q', "markdata", "Socket mark", "Q", 1, "<mark>" },
     { 's', "script", "feedback script path", "s", 1, "<path>" },
     { 't', "auth", "Require authentication", "t", 0, NULL },
     { 'T', "no-auth", "Don't require authentication", "T", 0, NULL },
@@ -413,6 +414,8 @@ parse_args (int           argc,
             case 'O': tr_variantDictAddBool (settings, TR_KEY_dht_enabled, false);
                       break;
             case 'p': tr_variantDictAddInt (settings, TR_KEY_rpc_port, atoi (optarg));
+                      break;
+            case 'Q': tr_variantDictAddInt (settings, TR_KEY_mark_data, atoll (optarg));
                       break;
             case 's': tr_variantDictAddStr (settings, TR_KEY_feedback_path, optarg);
                       break;

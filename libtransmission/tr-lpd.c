@@ -24,7 +24,6 @@ THE SOFTWARE.
 #include <errno.h>
 #include <stdio.h>
 #include <string.h> /* strlen (), strncpy (), strstr (), memset () */
-
 /* posix */
 #include <signal.h> /* sig_atomic_t */
 #include <ctype.h> /* toupper () */
@@ -288,6 +287,10 @@ int tr_lpdInit (tr_session* ss, tr_address* tr_addr UNUSED)
         if (lpd_socket == TR_BAD_SOCKET)
             goto fail;
 
+        if (setsockopt (lpd_socket, SOL_SOCKET, SO_MARK,
+                (const char *) &ss->peerSocketMark, sizeof(ss->peerSocketMark)) < 0)
+            goto fail;
+
         if (evutil_make_socket_nonblocking (lpd_socket) < 0)
             goto fail;
 
@@ -325,6 +328,10 @@ int tr_lpdInit (tr_session* ss, tr_address* tr_addr UNUSED)
 
         lpd_socket2 = socket (PF_INET, SOCK_DGRAM, 0);
         if (lpd_socket2 == TR_BAD_SOCKET)
+            goto fail;
+
+        if (setsockopt (lpd_socket2, SOL_SOCKET, SO_MARK,
+                (const char *) &ss->peerSocketMark, sizeof(ss->peerSocketMark)) < 0)
             goto fail;
 
         if (evutil_make_socket_nonblocking (lpd_socket2) < 0)
