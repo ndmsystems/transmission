@@ -146,6 +146,8 @@ static int sockoptfunction(void* vtask, curl_socket_t fd, curlsocktype purpose U
         setsockopt(fd, SOL_SOCKET, SO_RCVBUF, (void const*)&rcvbuf, sizeof(rcvbuf));
     }
 
+    setsockopt(fd, SOL_SOCKET, SO_MARK, (const char*)&task->session->peerSocketMark, sizeof(task->session->peerSocketMark));
+
     /* return nonzero if this function encountered an error */
     return 0;
 }

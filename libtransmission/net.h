@@ -133,11 +133,13 @@ struct tr_peer_socket tr_netOpenPeerSocket(tr_session* session, tr_address const
 
 struct tr_peer_socket tr_netOpenPeerUTPSocket(tr_session* session, tr_address const* addr, tr_port port, bool clientIsSeed);
 
-tr_socket_t tr_netBindTCP(tr_address const* addr, tr_port port, bool suppressMsgs);
+tr_socket_t tr_netBindTCP(tr_address const* addr, tr_port port, uint32_t mark, bool suppressMsgs);
 
 tr_socket_t tr_netAccept(tr_session* session, tr_socket_t bound, tr_address* setme_addr, tr_port* setme_port);
 
 void tr_netSetTOS(tr_socket_t s, int tos, tr_address_type type);
+
+void tr_netSetMark(tr_socket_t s, uint32_t mark);
 
 void tr_netSetCongestionControl(tr_socket_t s, char const* algorithm);
 
@@ -153,4 +155,4 @@ bool tr_net_hasIPv6(tr_port);
  */
 char* tr_net_strerror(char* buf, size_t buflen, int err);
 
-unsigned char const* tr_globalIPv6(void);
+unsigned char const* tr_globalIPv6(uint32_t mark);

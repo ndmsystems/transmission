@@ -185,6 +185,7 @@ struct tr_session
 
     int peerSocketTOS;
     char* peer_congestion_algorithm;
+    uint32_t peerSocketMark;
 
     int torrentCount;
     tr_torrent* torrentList;

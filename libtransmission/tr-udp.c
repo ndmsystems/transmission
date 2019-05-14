@@ -133,7 +133,7 @@ static void rebind_ipv6(tr_session* ss, bool force)
     bool is_default;
     struct tr_address const* public_addr;
     struct sockaddr_in6 sin6;
-    unsigned char const* ipv6 = tr_globalIPv6();
+    unsigned char const* ipv6 = tr_globalIPv6(ss->peerSocketMark);
     tr_socket_t s = TR_BAD_SOCKET;
     int rc;
     int one = 1;
@@ -318,6 +318,8 @@ void tr_udpInit(tr_session* ss)
         goto ipv6;
     }
 
+    tr_netSetMark(ss->udp_socket, ss->peerSocketMark);
+
     memset(&sin, 0, sizeof(sin));
     sin.sin_family = AF_INET;
     public_addr = tr_sessionGetPublicAddress(ss, TR_AF_INET, &is_default);
@@ -346,7 +348,7 @@ void tr_udpInit(tr_session* ss)
     }
 
 ipv6:
-    if (tr_globalIPv6() != NULL)
+    if (tr_globalIPv6(ss->peerSocketMark) != NULL)
     {
         rebind_ipv6(ss, true);
     }

@@ -196,6 +196,7 @@ static struct tr_key_struct const my_static[] =
     Q("main-window-x"),
     Q("main-window-y"),
     Q("manualAnnounceTime"),
+    Q("markdata"),
     Q("max-peers"),
     Q("maxConnectedPeers"),
     Q("memory-bytes"),

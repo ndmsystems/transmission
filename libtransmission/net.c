@@ -149,6 +149,21 @@ int tr_address_compare(tr_address const* a, tr_address const* b)
     return memcmp(&a->addr, &b->addr, sizes[a->type]);
 }
 
+void tr_netSetMark(tr_socket_t s, uint32_t mark)
+{
+#if defined(SO_MARK) && !defined(_WIN32)
+    if (setsockopt(s, SOL_SOCKET, SO_MARK, (const void*)&mark, sizeof(mark)) == -1)
+    {
+        char err_buf[512];
+        tr_logAddNamedInfo("Net", "Can't set SO_MARK '%d': %s", mark, tr_net_strerror(err_buf, sizeof(err_buf), sockerrno));
+    }
+
+#else
+    (void)s;
+    (void)mark;
+#endif
+}
+
 /***********************************************************************
  * TCP sockets
  **********************************************************************/
@@ -293,6 +308,8 @@ struct tr_peer_socket tr_netOpenPeerSocket(tr_session* session, tr_address const
         return ret;
     }
 
+    tr_netSetMark(s, session->peerSocketMark);
+
     /* seeds don't need much of a read buffer... */
     if (clientIsSeed)
     {
@@ -373,7 +390,7 @@ struct tr_peer_socket tr_netOpenPeerUTPSocket(tr_session* session, tr_address co
     return ret;
 }
 
-static tr_socket_t tr_netBindTCPImpl(tr_address const* addr, tr_port port, bool suppressMsgs, int* errOut)
+static tr_socket_t tr_netBindTCPImpl(tr_address const* addr, tr_port port, uint32_t mark, bool suppressMsgs, int* errOut)
 {
     TR_ASSERT(tr_address_is_valid(addr));
 
@@ -401,6 +418,7 @@ static tr_socket_t tr_netBindTCPImpl(tr_address const* addr, tr_port port, bool 
     optval = 1;
     setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (void const*)&optval, sizeof(optval));
     setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (void const*)&optval, sizeof(optval));
+    setsockopt(fd, SOL_SOCKET, SO_MARK, (const char*)&mark, sizeof(mark));
 
 #ifdef IPV6_V6ONLY
 
@@ -483,10 +501,10 @@ static tr_socket_t tr_netBindTCPImpl(tr_address const* addr, tr_port port, bool 
     return fd;
 }
 
-tr_socket_t tr_netBindTCP(tr_address const* addr, tr_port port, bool suppressMsgs)
+tr_socket_t tr_netBindTCP(tr_address const* addr, tr_port port, uint32_t mark, bool suppressMsgs)
 {
     int unused;
-    return tr_netBindTCPImpl(addr, port, suppressMsgs, &unused);
+    return tr_netBindTCPImpl(addr, port, mark, suppressMsgs, &unused);
 }
 
 bool tr_net_hasIPv6(tr_port port)
@@ -497,7 +515,7 @@ bool tr_net_hasIPv6(tr_port port)
     if (!alreadyDone)
     {
         int err;
-        tr_socket_t fd = tr_netBindTCPImpl(&tr_in6addr_any, port, true, &err);
+        tr_socket_t fd = tr_netBindTCPImpl(&tr_in6addr_any, port, 0, true, &err);
 
         if (fd != TR_BAD_SOCKET || err != EAFNOSUPPORT) /* we support ipv6 */
         {
@@ -548,7 +566,8 @@ void tr_netClose(tr_session* session, tr_socket_t s)
    there is no official interface to get this information, we create
    a connected UDP socket (connected UDP... hmm...) and check its source
    address. */
-static int get_source_address(struct sockaddr const* dst, socklen_t dst_len, struct sockaddr* src, socklen_t* src_len)
+static int get_source_address(struct sockaddr const* dst, socklen_t dst_len, struct sockaddr* src, socklen_t* src_len,
+    uint32_t mark)
 {
     tr_socket_t s;
     int rc;
@@ -560,6 +579,8 @@ static int get_source_address(struct sockaddr const* dst, socklen_t dst_len, str
     {
         goto fail;
     }
+
+    setsockopt(s, SOL_SOCKET, SO_MARK, (const char*)&mark, sizeof(mark));
 
     /* Since it's a UDP socket, this doesn't actually send any packets. */
     rc = connect(s, dst, dst_len);
@@ -615,7 +636,7 @@ static int global_unicast_address(struct sockaddr_storage* ss)
     }
 }
 
-static int tr_globalAddress(int af, void* addr, int* addr_len)
+static int tr_globalAddress(int af, void* addr, int* addr_len, uint32_t mark)
 {
     struct sockaddr_storage ss;
     socklen_t sslen = sizeof(ss);
@@ -651,7 +672,7 @@ static int tr_globalAddress(int af, void* addr, int* addr_len)
         return -1;
     }
 
-    rc = get_source_address(sa, salen, (struct sockaddr*)&ss, &sslen);
+    rc = get_source_address(sa, salen, (struct sockaddr*)&ss, &sslen, mark);
 
     if (rc < 0)
     {
@@ -691,7 +712,7 @@ static int tr_globalAddress(int af, void* addr, int* addr_len)
 }
 
 /* Return our global IPv6 address, with caching. */
-unsigned char const* tr_globalIPv6(void)
+unsigned char const* tr_globalIPv6(uint32_t mark)
 {
     static unsigned char ipv6[16];
     static time_t last_time = 0;
@@ -702,7 +723,7 @@ unsigned char const* tr_globalIPv6(void)
     if (last_time < now - 1800)
     {
         int addrlen = 16;
-        int const rc = tr_globalAddress(AF_INET6, ipv6, &addrlen);
+        int const rc = tr_globalAddress(AF_INET6, ipv6, &addrlen, mark);
         have_ipv6 = rc >= 0 && addrlen == 16;
         last_time = now;
     }
