@@ -139,7 +139,8 @@ const char* tr_getDefaultDownloadDir (void);
 	defined __KN_1010__ || \
 	defined __KN_1810__ || \
 	defined __KN_1910__ || \
-	defined __KN_2310__
+	defined __KN_2310__ || \
+	defined __KN_2410__
 
 #define TR_MAX_SPEED_KB                    (1024*15)
 #define TR_MAX_PEERS_COUNT                       200
@@ -162,7 +163,8 @@ const char* tr_getDefaultDownloadDir (void);
 
 #elif defined __KIRB__	  || \
 	  defined __KN_1410__ || \
-	  defined __KN_1710__
+	  defined __KN_1710__ || \
+	  defined __KN_1711__
 
 /* MT7628 128M RAM */
 
