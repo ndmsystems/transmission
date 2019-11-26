@@ -2006,12 +2006,18 @@ sessionSet (tr_session               * session,
     {
       if (tr_sys_path_is_relative (download_dir))
         return "download directory path is not absolute";
+
+      if (!isValidDir (download_dir, 0))
+        return "invalid download directory";
     }
 
   if (tr_variantDictFindStr (args_in, TR_KEY_incomplete_dir, &incomplete_dir, NULL))
     {
       if (tr_sys_path_is_relative (incomplete_dir))
         return "incomplete torrents directory path is not absolute";
+
+      if (!isValidDir (incomplete_dir, 0))
+        return "invalid incomlete directory";
     }
 
   int64_t i;
