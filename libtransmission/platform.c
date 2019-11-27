@@ -450,7 +450,7 @@ char const* tr_getDefaultDownloadDir(void)
 #ifdef __HAIKU__
             user_dir = tr_buildPath(getHomeDir(), "Desktop", NULL);
 #else
-            user_dir = tr_buildPath(getHomeDir(), "Downloads", NULL);
+            user_dir = tr_buildPath(getHomeDir(), "download", NULL);
 #endif
         }
 
