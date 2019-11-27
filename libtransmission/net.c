@@ -24,6 +24,7 @@
  *****************************************************************************/
 
 #include <errno.h>
+#include <stdio.h>
 #include <string.h>
 #include <assert.h>
 
@@ -435,13 +436,27 @@ tr_net_hasIPv6 (tr_port port)
 
     if (!alreadyDone)
     {
+        alreadyDone = true;
+
+        char buf[2];
+        FILE * f;
+        f = fopen("/proc/sys/net/ipv6/conf/default/disable_ipv6", "r");
+        if (!f || !fgets(buf, sizeof(buf), f))
+        {
+            tr_logAddError ("Couldn't read system configuration");
+            return false;
+        }
+        fclose(f);
+
+        if ( !strcmp(buf, "1") )
+            return false;
+
         int err;
         tr_socket_t fd = tr_netBindTCPImpl (&tr_in6addr_any, port, 0, true, &err);
         if (fd != TR_BAD_SOCKET || err != EAFNOSUPPORT) /* we support ipv6 */
             result = true;
         if (fd != TR_BAD_SOCKET)
             tr_netCloseSocket (fd);
-        alreadyDone = true;
     }
 
     return result;
