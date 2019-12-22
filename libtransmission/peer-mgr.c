@@ -2133,10 +2133,10 @@ tr_peerMgrAddPex (tr_torrent * tor, uint8_t from,
 
       if (!tr_sessionIsAddressBlocked (s->manager->session, &pex->addr))
         if (tr_address_is_valid_for_peers (&pex->addr, pex->port))
-          if (pex->addr.type != TR_AF_INET6 && !tr_net_hasIPv6(pex->port))
-            ensureAtomExists (s, &pex->addr, pex->port, pex->flags, seedProbability, from);
-          else
+          if (pex->addr.type == TR_AF_INET6 && !tr_net_hasIPv6(pex->port))
             tr_logAddDebug ("skip IPv6 peer \"%s\"", tr_address_to_string (&pex->addr));
+          else
+            ensureAtomExists (s, &pex->addr, pex->port, pex->flags, seedProbability, from);
 
       managerUnlock (s->manager);
     }
