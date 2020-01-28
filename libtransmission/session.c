@@ -59,6 +59,10 @@
 #include "version.h"
 #include "web.h"
 
+#define NDM_MAX_SPEED_KBPS_ENV "MAX_SPEED_KBPS"
+#define NDM_MAX_PEERS_ENV "MAX_PEERS"
+#define NDM_CACHE_SIZE_MB_ENV "CACHE_SIZE_MB"
+
 enum
 {
 #ifdef TR_LIGHTWEIGHT
@@ -68,7 +72,8 @@ enum
     DEFAULT_CACHE_SIZE_MB = 4,
     DEFAULT_PREFETCH_ENABLED = true,
 #endif
-    SAVE_INTERVAL_SECS = 360
+    SAVE_INTERVAL_SECS = 360,
+    DEFAULT_SPEED_LIMIT_KBPS = 20000
 };
 
 #define dbgmsg(...) tr_logAddDeepNamed(NULL, __VA_ARGS__)
@@ -337,7 +342,7 @@ void tr_sessionGetDefaultSettings(tr_variant* d)
     tr_variantDictAddBool(d, TR_KEY_utp_enabled, true);
     tr_variantDictAddBool(d, TR_KEY_lpd_enabled, false);
     tr_variantDictAddStr(d, TR_KEY_download_dir, tr_getDefaultDownloadDir());
-    tr_variantDictAddInt(d, TR_KEY_speed_limit_down, 100);
+    tr_variantDictAddInt(d, TR_KEY_speed_limit_down, DEFAULT_SPEED_LIMIT_KBPS);
     tr_variantDictAddBool(d, TR_KEY_speed_limit_down_enabled, false);
     tr_variantDictAddInt(d, TR_KEY_encryption, TR_DEFAULT_ENCRYPTION);
     tr_variantDictAddInt(d, TR_KEY_idle_seeding_limit, 30);
@@ -354,14 +359,14 @@ void tr_sessionGetDefaultSettings(tr_variant* d)
     tr_variantDictAddInt(d, TR_KEY_peer_port_random_low, 49152);
     tr_variantDictAddInt(d, TR_KEY_peer_port_random_high, 65535);
     tr_variantDictAddStr(d, TR_KEY_peer_socket_tos, TR_DEFAULT_PEER_SOCKET_TOS_STR);
-    tr_variantDictAddBool(d, TR_KEY_pex_enabled, true);
-    tr_variantDictAddBool(d, TR_KEY_port_forwarding_enabled, true);
+    tr_variantDictAddBool(d, TR_KEY_pex_enabled, false);
+    tr_variantDictAddBool(d, TR_KEY_port_forwarding_enabled, false);
     tr_variantDictAddInt(d, TR_KEY_preallocation, TR_PREALLOCATE_SPARSE);
     tr_variantDictAddBool(d, TR_KEY_prefetch_enabled, DEFAULT_PREFETCH_ENABLED);
     tr_variantDictAddInt(d, TR_KEY_peer_id_ttl_hours, 6);
     tr_variantDictAddBool(d, TR_KEY_queue_stalled_enabled, true);
     tr_variantDictAddInt(d, TR_KEY_queue_stalled_minutes, 30);
-    tr_variantDictAddReal(d, TR_KEY_ratio_limit, 2.0);
+    tr_variantDictAddReal(d, TR_KEY_ratio_limit, 1.5);
     tr_variantDictAddBool(d, TR_KEY_ratio_limit_enabled, false);
     tr_variantDictAddBool(d, TR_KEY_rename_partial_files, true);
     tr_variantDictAddBool(d, TR_KEY_rpc_authentication_required, false);
@@ -387,7 +392,7 @@ void tr_sessionGetDefaultSettings(tr_variant* d)
     tr_variantDictAddBool(d, TR_KEY_alt_speed_time_enabled, false);
     tr_variantDictAddInt(d, TR_KEY_alt_speed_time_end, 1020); /* 5pm */
     tr_variantDictAddInt(d, TR_KEY_alt_speed_time_day, TR_SCHED_ALL);
-    tr_variantDictAddInt(d, TR_KEY_speed_limit_up, 100);
+    tr_variantDictAddInt(d, TR_KEY_speed_limit_up, DEFAULT_SPEED_LIMIT_KBPS);
     tr_variantDictAddBool(d, TR_KEY_speed_limit_up_enabled, false);
     tr_variantDictAddInt(d, TR_KEY_umask, 022);
     tr_variantDictAddInt(d, TR_KEY_upload_slots_per_torrent, 14);
@@ -616,6 +621,42 @@ tr_session* tr_sessionInit(char const* configDir, bool messageQueuingEnabled, tr
     session->session_id = tr_session_id_new();
     tr_bandwidthConstruct(&session->bandwidth, session, NULL);
     tr_variantInitList(&session->removedTorrents, 0);
+
+#ifdef HAVE_NDM
+    const char* maxSpeedKbps = getenv(NDM_MAX_SPEED_KBPS_ENV);
+
+    if (maxSpeedKbps)
+    {
+        session->maxSpeed_Kbps = atoi(maxSpeedKbps);
+    }
+    else
+    {
+        session->maxSpeed_Kbps = 0;
+    }
+
+    const char* maxPeers = getenv(NDM_MAX_PEERS_ENV);
+
+    if (maxPeers)
+    {
+        session->maxPeers = atoi(maxPeers);
+    }
+    else
+    {
+        session->maxPeers = 0;
+    }
+
+    const char* cacheSizeMB = getenv(NDM_CACHE_SIZE_MB_ENV);
+
+    if (cacheSizeMB)
+    {
+        session->cacheSizeMB = atoi(cacheSizeMB);
+    }
+    else
+    {
+        session->cacheSizeMB = 0;
+    }
+
+#endif
 
     /* nice to start logging at the very beginning */
     if (tr_variantDictFindInt(clientSettings, TR_KEY_message_level, &i))
@@ -1602,6 +1643,14 @@ void tr_sessionSetSpeedLimit_Bps(tr_session* s, tr_direction d, unsigned int Bps
 
 void tr_sessionSetSpeedLimit_KBps(tr_session* s, tr_direction d, unsigned int KBps)
 {
+#ifdef HAVE_NDM
+    if (s->maxSpeed_Kbps && KBps > s->maxSpeed_Kbps)
+    {
+        KBps = s->maxSpeed_Kbps;
+    }
+
+#endif
+
     tr_sessionSetSpeedLimit_Bps(s, d, toSpeedBytes(KBps));
 }
 
@@ -1623,7 +1672,16 @@ void tr_sessionLimitSpeed(tr_session* s, tr_direction d, bool b)
     TR_ASSERT(tr_isSession(s));
     TR_ASSERT(tr_isDirection(d));
 
-    s->speedLimitEnabled[d] = b;
+#ifdef HAVE_NDM
+    if (s->maxSpeed_Kbps)
+    {
+        s->speedLimitEnabled[d] = true;
+    }
+    else
+#endif
+    {
+        s->speedLimitEnabled[d] = b;
+    }
 
     updateBandwidth(s, d);
 }
@@ -1652,6 +1710,14 @@ void tr_sessionSetAltSpeed_Bps(tr_session* s, tr_direction d, unsigned int Bps)
 
 void tr_sessionSetAltSpeed_KBps(tr_session* s, tr_direction d, unsigned int KBps)
 {
+#ifdef HAVE_NDM
+    if (s->maxSpeed_Kbps && KBps > s->maxSpeed_Kbps)
+    {
+        KBps = s->maxSpeed_Kbps;
+    }
+
+#endif
+
     tr_sessionSetAltSpeed_Bps(s, d, toSpeedBytes(KBps));
 }
 
@@ -1790,6 +1856,14 @@ void tr_sessionSetPeerLimit(tr_session* session, uint16_t n)
 {
     TR_ASSERT(tr_isSession(session));
 
+#ifdef HAVE_NDM
+    if (session->maxPeers && n > session->maxPeers)
+    {
+        n = session->maxPeers;
+    }
+
+#endif
+
     session->peerLimit = n;
 }
 
@@ -1803,6 +1877,14 @@ uint16_t tr_sessionGetPeerLimit(tr_session const* session)
 void tr_sessionSetPeerLimitPerTorrent(tr_session* session, uint16_t n)
 {
     TR_ASSERT(tr_isSession(session));
+
+#ifdef HAVE_NDM
+    if (session->maxPeers && n > session->maxPeers)
+    {
+        n = session->maxPeers;
+    }
+
+#endif
 
     session->peerLimitPerTorrent = n;
 }
@@ -2029,8 +2111,8 @@ void tr_sessionClose(tr_session* session)
 
     time_t const deadline = time(NULL) + SHUTDOWN_MAX_SECONDS;
 
-    dbgmsg("shutting down transmission session %p... now is %zu, deadline is %zu", (void*)session, (size_t)time(NULL),
-        (size_t)deadline);
+    dbgmsg("shutting down transmission session %p... now is %zu, deadline is %zu", (void*)session, (size_t)time( NULL),
+	(size_t)deadline);
 
     /* close the session */
     tr_runInEventThread(session, sessionCloseImpl, session);
@@ -2340,6 +2422,14 @@ bool tr_sessionAllowsLPD(tr_session const* session)
 void tr_sessionSetCacheLimit_MB(tr_session* session, int max_bytes)
 {
     TR_ASSERT(tr_isSession(session));
+
+#ifdef HAVE_NDM
+    if (session->cacheSizeMB)
+    {
+        max_bytes = session->cacheSizeMB;
+    }
+
+#endif
 
     tr_cacheSetLimit(session->cache, toMemBytes(max_bytes));
 }

@@ -240,6 +240,9 @@ struct tr_session
 #ifdef HAVE_NDM
     struct ndm_dlist_entry_t cached_accounts;
     struct ndm_core_event_connection_t* ndm_cconn;
+    unsigned int maxSpeed_Kbps;
+    uint16_t maxPeers;
+    uint16_t cacheSizeMB;
 #endif
 };
 
