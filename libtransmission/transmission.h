@@ -133,67 +133,6 @@ const char* tr_getDefaultConfigDir (const char * appname);
  */
 const char* tr_getDefaultDownloadDir (void);
 
-/* NDM internal limits */
-
-#if defined __KURD__	|| \
-	defined __KN_1010__ || \
-	defined __KN_1810__ || \
-	defined __KN_1910__ || \
-	defined __KN_2310__ || \
-	defined __KN_2410__
-
-#define TR_MAX_SPEED_KB                    (1024*15)
-#define TR_MAX_PEERS_COUNT                       200
-#define NDM_CACHE_SIZE_MB                          4
-
-#elif defined __KNGRE__
-
-#define TR_MAX_SPEED_KB                    (1024*12)
-#define TR_MAX_PEERS_COUNT                       200
-#define NDM_CACHE_SIZE_MB                          2
-
-#elif defined __KNGRC__ || \
-	  defined __KURC__
-
-/* MT7620 128M RAM */
-
-#define TR_MAX_SPEED_KB                     (1024*4)
-#define TR_MAX_PEERS_COUNT                       120
-#define NDM_CACHE_SIZE_MB                          1
-
-#elif defined __KIRB__	  || \
-	  defined __KN_1410__ || \
-	  defined __KN_1710__ || \
-	  defined __KN_1711__
-
-/* MT7628 128M RAM */
-
-#define TR_MAX_SPEED_KB                     (1024*3)
-#define TR_MAX_PEERS_COUNT                       120
-#define NDM_CACHE_SIZE_MB                          1
-
-#elif defined __MT76XX__ || defined __MT7628__
-
-#define TR_MAX_SPEED_KB                     (1024*3)
-#define TR_MAX_PEERS_COUNT                        80
-#define NDM_CACHE_SIZE_MB                          1
-
-#elif defined __RT6XXX__ || defined __RT63XXX__ || defined __EN751X__
-
-#define TR_MAX_SPEED_KB                     (1024*5)
-#define TR_MAX_PEERS_COUNT                       200
-#define NDM_CACHE_SIZE_MB                          2
-
-#else
-
-#define TR_MAX_SPEED_KB                     (1024*3)
-#define TR_MAX_PEERS_COUNT                        80
-#define NDM_CACHE_SIZE_MB                          1
-
-#endif
-
-/* NDM internal limits end */
-
 #define TR_DEFAULT_BIND_ADDRESS_IPV4        "0.0.0.0"
 #define TR_DEFAULT_BIND_ADDRESS_IPV6             "::"
 #define TR_DEFAULT_RPC_WHITELIST          "127.0.0.1"
