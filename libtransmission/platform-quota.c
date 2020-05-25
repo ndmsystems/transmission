@@ -482,7 +482,7 @@ static int64_t tr_getDiskFreeSpace(char const* path)
 #elif defined(HAVE_STATVFS)
 
     struct statvfs buf;
-    return statvfs(path, &buf) ? -1 : (int64_t)buf.f_bavail * (int64_t)buf.f_frsize;
+    return statvfs(path, &buf) ? -1 : (int64_t)buf.f_bfree * (int64_t)buf.f_frsize;
 
 #else
 
