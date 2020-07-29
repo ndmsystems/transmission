@@ -6,10 +6,6 @@
  *
  */
 
-#ifdef HAVE_FALLOCATE64
-#define _GNU_SOURCE
-#endif
-
 #include <errno.h>
 #include <inttypes.h>
 #include <string.h>
@@ -18,12 +14,6 @@
 #include <sys/time.h> /* getrlimit */
 #include <sys/resource.h> /* getrlimit */
 #endif
-
-#ifdef HAVE_NDM /* { */
-#include <fcntl.h> /* posix_fallocate */
-#include <unistd.h> /* write, ftruncate */
-#include <sys/ioctl.h> /* ioctl */
-#endif /* } */
 
 #include "transmission.h"
 #include "error.h"
@@ -43,83 +33,6 @@
 ****
 ***/
 
-#ifdef HAVE_NDM /* { */
-
-#define TUXERA_IOCTL_FALLOCATE_FL_KEEP_SIZE 0x0001
-#define TUXERA_IOCTL_FALLOCATE_SKIP_ZEROING 0x1000
-#define TUXERA_IOCTL_FALLOCATE _IOW('N', 213, TUXERA_IOCTL_FALLOCATE_ARGS)
-
-typedef struct _TUXERA_IOCTL_FALLOCATE_ARGS
-{
-    uint64_t offset;
-    uint64_t length;
-    uint32_t mode;
-} __attribute__((packed)) TUXERA_IOCTL_FALLOCATE_ARGS;
-
-static bool tuxera_fallocate(int fd, uint64_t length)
-{
-    TUXERA_IOCTL_FALLOCATE_ARGS fa =
-    {
-        .offset = 0,  /* offset in bytes */
-        .length = length, /* length in bytes */
-        .mode = TUXERA_IOCTL_FALLOCATE_SKIP_ZEROING
-    };
-
-    return ioctl(fd, TUXERA_IOCTL_FALLOCATE, &fa) == 0;
-}
-
-static bool preallocate_file_full_ndm(tr_sys_file_t fd, uint64_t length, tr_error** error)
-{
-    bool success = false;
-    errno = 0;
-
-    if (length == 0)
-    {
-        return true;
-    }
-
-    success = tuxera_fallocate(fd, length);
-#ifdef HAVE_FALLOCATE64
-    if (!success)
-    {
-        success = !fallocate64(fd, 0, 0, length);
-    }
-
-#endif
-#ifdef HAVE_POSIX_FALLOCATE
-    if (!success)
-    {
-        success = !posix_fallocate(fd, 0, length);
-    }
-
-#endif
-    if (!success) /* fake allocate */
-    {
-        success = !ftruncate(fd, length);
-    }
-
-    if (!success) /* if nothing else works, do it the old-fashioned way */
-    {
-        uint8_t buf[4096];
-        memset(buf, 0, sizeof(buf));
-        success = true;
-        while (success && (length > 0))
-        {
-            const int thisPass = MIN(length, sizeof(buf));
-            success = write(fd, buf, thisPass) == thisPass;
-            length -= thisPass;
-        }
-    }
-
-    if ((!success) && (error != NULL))
-    {
-        tr_error_set_literal(error, errno, tr_strerror(errno));
-    }
-
-    return success;
-}
-
-#else
 static bool preallocate_file_sparse(tr_sys_file_t fd, uint64_t length, tr_error** error)
 {
     tr_error* my_error = NULL;
@@ -199,8 +112,6 @@ static bool preallocate_file_full(tr_sys_file_t fd, uint64_t length, tr_error** 
     tr_error_propagate(error, &my_error);
     return false;
 }
-
-#endif /* } */
 
 /*****
 ******
@@ -290,10 +201,6 @@ static int cached_file_open(struct tr_cached_file* o, char const* filename, bool
         bool success = false;
         char const* type = NULL;
 
-#ifdef HAVE_NDM
-        success = preallocate_file_full_ndm(fd, file_size, &error);
-        type = _("full");
-#else
         if (allocation == TR_PREALLOCATE_FULL)
         {
             success = preallocate_file_full(fd, file_size, &error);
@@ -304,7 +211,6 @@ static int cached_file_open(struct tr_cached_file* o, char const* filename, bool
             success = preallocate_file_sparse(fd, file_size, &error);
             type = _("sparse");
         }
-#endif
 
         TR_ASSERT(type != NULL);
 
