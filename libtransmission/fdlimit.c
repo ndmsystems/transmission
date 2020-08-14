@@ -78,7 +78,13 @@ static bool preallocate_file_full_ndm(tr_sys_file_t fd, uint64_t length, tr_erro
         return true;
     }
 
-    success = tuxera_fallocate(fd, length);
+    success = !ftruncate(fd, length);
+
+    if (!success)
+    {
+        success = tuxera_fallocate(fd, length);
+    }
+
 #ifdef HAVE_FALLOCATE64
     if (!success)
     {
@@ -93,10 +99,6 @@ static bool preallocate_file_full_ndm(tr_sys_file_t fd, uint64_t length, tr_erro
     }
 
 #endif
-    if (!success) /* fake allocate */
-    {
-        success = !ftruncate(fd, length);
-    }
 
     if (!success) /* if nothing else works, do it the old-fashioned way */
     {
